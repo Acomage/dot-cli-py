@@ -1,3 +1,11 @@
+# DON'T USE THIS TOOL NOW
+
+This tool is not ready for use, it's still under development. There are many bugs and missing features. I will update this README when it's ready for use.
+
+# 现在不要使用这个工具
+
+这个工具还没有准备好使用，仍在开发中。有很多bug和缺失的功能。当它准备好使用时，我会更新这个README。
+
 # Dot CLI
 
 A powerful dotfile management tool for Linux systems.
@@ -26,11 +34,13 @@ Dot CLI helps you manage your dotfiles across multiple machines. It provides fea
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/dot-cli.git
+git clone https://github.com/Acomage/dot-cli-py.git
 
-# Install the package
-cd dot-cli
-pip install -e .
+# Set up to use
+cd dot-cli-py
+chmod +x main.py
+# Add the following line to your .bashrc or .zshrc or .config/fish/config.fish, or run it every time you open a shell session
+alias dot="python /path/to/your/main.py"
 ```
 
 ## Quick Start
@@ -168,11 +178,13 @@ Dot CLI帮助您跨多台机器管理点文件（dotfiles）。它提供了跟�
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/dot-cli.git
+git clone https://github.com/Acomage/dot-cli-py.git
 
-# 安装包
-cd dot-cli
-pip install -e .
+# 设置使用
+cd dot-cli-py
+chmod +x main.py
+# 将以下行添加到您的.bashrc或.zshrc或.config/fish/config.fish中，或者每次打开shell会话时运行它
+alias dot="python /path/to/your/main.py"
 ```
 
 ## 快速入门

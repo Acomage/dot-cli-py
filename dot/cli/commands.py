@@ -137,7 +137,7 @@ def _create_readme() -> None:
             f.write("# Dotfiles\n\n")
             f.write("This repository is managed by the Dot CLI tool.\n\n")
             f.write(
-                "For more information, visit https://github.com/yourusername/dot-cli\n"
+                "For more information, visit https://github.com/Acomage/dot-cli-py\n"
             )
     except OSError as e:
         logger.error(f"Error creating README.md: {e}")

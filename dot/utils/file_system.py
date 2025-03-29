@@ -424,11 +424,7 @@ class FileSystem:
 
 if __name__ == "__main__":
     fs = FileSystem()
-    fs.add("~/.zshrc", "zsh")
-    fs.add("~/.config/nvim/lua", "nvim")
     fs.add("~/.config/nvim", "nvim")
-    fs.add("/etc/keyd", "keyd")
-
-    json_str = fs.to_json()
-    loaded_fs = FileSystem.from_json(json_str)
-    print(json_str == loaded_fs.to_json())
+    print(fs.to_json())
+    fs.add("~/.config/nvim", "nvim")
+    print(fs.to_json())

@@ -27,7 +27,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="dot",
         description="Dot: A dotfile management tool for Linux systems.",
-        epilog="For more information, visit https://github.com/yourusername/dot-cli",
+        epilog="For more information, visit https://github.com/Acomage/dot-cli-py",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
