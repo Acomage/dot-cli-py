@@ -28,13 +28,13 @@ class ConflictManager:
         self.system_conflict_path = os.path.join(self.conflict_path, "system")
 
         # Ensure conflict directories exist
-        for path in [
-            self.conflict_path,
-            self.user_conflict_path,
-            self.system_conflict_path,
-        ]:
-            if not os.path.exists(path):
-                os.makedirs(path, exist_ok=True)
+        # for path in [
+        #     self.conflict_path,
+        #     self.user_conflict_path,
+        #     self.system_conflict_path,
+        # ]:
+        #     if not os.path.exists(path):
+        #         os.makedirs(path, exist_ok=True)
 
     def _get_conflict_file_path(self, original_path: str) -> str:
         """Get the path to the conflict version of a file."""

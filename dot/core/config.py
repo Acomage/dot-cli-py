@@ -18,8 +18,8 @@ class ConfigManager:
         self.local_config_path = os.path.join(self.dotfiles_path, "local_config.json")
 
         # Ensure paths exist
-        if not os.path.exists(self.dotfiles_path):
-            os.makedirs(self.dotfiles_path, exist_ok=True)
+        # if not os.path.exists(self.dotfiles_path):
+        #     os.makedirs(self.dotfiles_path, exist_ok=True)
 
         # Initialize file system objects
         self.fs = FileSystem()
