@@ -18,6 +18,9 @@ class Node:
         result = {"name": self.name, "owner": self.owner}
         return result
 
+    def __repr__(self) -> str:
+        return self.name
+
 
 class File(Node):
     """Represents a file in the file system."""
@@ -54,8 +57,9 @@ class Dir(Node):
     def to_dict(self) -> Dict[str, Any]:
         """Convert directory to dictionary representation."""
         result = super().to_dict()
-        if self.contents:
-            result["contents"] = [item.to_dict() for item in self.contents]
+        # if self.contents:
+        #     result["contents"] = [item.to_dict() for item in self.contents]
+        result["contents"] = [item.to_dict() for item in self.contents]
         return result
 
     def find_node(self, name: str) -> Optional[Union["Dir", File]]:
@@ -95,7 +99,7 @@ class FileSystem:
     """File indexing system to manage marked files in the real file system."""
 
     def __init__(self):
-        self.USER_PATH = str(pathlib.Path.home()) + "/"
+        self.USER_PATH = str(pathlib.Path.home())
         self.SYSTEM_PATH = "/"
         self.forests = {
             "USER": [],  # List of root nodes in USER forest
@@ -104,6 +108,7 @@ class FileSystem:
 
     def _normalize_path(self, path: str) -> str:
         """Normalize path, expanding ~ to user's home directory."""
+        return os.path.expanduser(path)
         if path.startswith("~"):
             path = str(pathlib.Path.home()) + path[1:]
         return os.path.normpath(path)
@@ -266,7 +271,12 @@ class FileSystem:
         # Check for existing subtrees in this new path
         existing_subtrees = []
         for root in list(self.forests[forest_type]):
+            if root.name == rel_path:
+                raise ValueError(
+                    f"Cannot add '{path}' with owner '{owner}' - you already added this path"
+                )
             if root.name.startswith(rel_path + "/"):
+                # if root.name.startswith(rel_path):
                 # This is a subtree of the path we're adding
                 if root.owner != owner:
                     raise ValueError(
@@ -285,7 +295,7 @@ class FileSystem:
             parent_path = os.path.dirname(rel_path)
             if parent_path:
                 parent_rel_path = parent_path
-                parent, _, _ = self._find_node_by_path(
+                _, parent, _ = self._find_node_by_path(
                     f"~/{parent_rel_path}"
                     if forest_type == "USER"
                     else f"/{parent_rel_path}"
@@ -293,6 +303,7 @@ class FileSystem:
 
                 if parent and isinstance(parent, Dir) and parent.owner == owner:
                     # This new directory should be added to an existing parent
+                    dir_node.name = os.path.basename(rel_path)
                     parent.add_node(dir_node)
                     return
 
@@ -424,7 +435,9 @@ class FileSystem:
 
 if __name__ == "__main__":
     fs = FileSystem()
-    fs.add("~/.config/nvim", "nvim")
-    print(fs.to_json())
-    fs.add("~/.config/nvim", "nvim")
+    fs.add("~/.config/nvim/lua", "nvim")
+    fs.add("~/.zshrc", "zsh")
+    fs.add("/etc/keyd", "keyd")
+    fs.add("/etc/kmscon", "kmscon")
+    fs.remove("/etc/keyd")
     print(fs.to_json())
