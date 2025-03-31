@@ -124,7 +124,7 @@ class FileSystem:
                         add_file_to_dir(new_node, existing_top_tree)
                         if self.if_hook:
                             hook(
-                                f"Merge file {new_path.path} into {existing_top_tree.path.path}"
+                                f"Add file {new_path.path} into {existing_top_tree.path.path}"
                             )
                         return
             self.forest[new_path.type.value][1].append((new_node, owner))
@@ -284,5 +284,4 @@ if __name__ == "__main__":
     fs.remove("~/.config/nvim/lua/lualine/")
     fs.add("~/.config/nvim", "nvim")
     fs.add("~/.config/nvim/lua/lualine/themes/ras.lua", "nvim")
-    fs.add("~/.config/nvim/lua/config/lazy.lua", "nvim")
     print(fs)
