@@ -1,2 +1,2 @@
-def run(command: str):
+def hook(command: str):
     print(command)
