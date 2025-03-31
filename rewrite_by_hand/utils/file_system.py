@@ -15,13 +15,16 @@ def merge_two_trees_dir(source: Dir, target: Dir) -> None:
     current_dir = target
     for part in source_parts[len(target_parts) : -1]:
         if part not in current_dir.subdirs:
-            raise ValueError(f"Missing directory in path: {part}")
+            # raise ValueError(f"Missing directory in path: {part}")
+            current_dir.subdirs[part] = Dir(
+                Path(os.path.join(current_dir.path.path, part)), auto_fill=False
+            )
         current_dir = current_dir.subdirs[part]
 
     current_dir.subdirs[source.name] = source
 
 
-def merge_two_trees_file(source: File, target: Dir) -> None:
+def add_file_to_dir(source: File, target: Dir) -> None:
     target_parts = target.path.cut_path
     source_parts = source.path.cut_path
 
@@ -31,9 +34,14 @@ def merge_two_trees_file(source: File, target: Dir) -> None:
     current_dir = target
     for part in source_parts[len(target_parts) : -1]:
         if part not in current_dir.subdirs:
-            raise ValueError(f"Missing directory in path: {part}")
+            current_dir.subdirs[part] = Dir(
+                Path(os.path.join(current_dir.path.path, part)), auto_fill=False
+            )
         current_dir = current_dir.subdirs[part]
-
+    if source.name in current_dir.files:
+        raise ValueError(
+            f"File {source.path.path} already exists in {current_dir.path.path}"
+        )
     current_dir.files[source.name] = source
 
 
@@ -88,8 +96,9 @@ class FileSystem:
                         )
             for existing_top_tree in dir_wait_for_merge_to:
                 merge_two_trees_dir(existing_top_tree[0], new_node)
-            for existing_top_tree in file_wait_for_merge_to:
-                merge_two_trees_file(existing_top_tree[0], new_node)
+            # do not need to merge file trees, because they are already there
+            # for existing_top_tree in file_wait_for_merge_to:
+            #     merge_two_trees_file(existing_top_tree[0], new_node)
             # remove the existing top trees after merging to make add atomic
             for existing_top_tree in dir_wait_for_merge_to:
                 self.forest[new_path.type.value][0].remove(existing_top_tree)
@@ -112,7 +121,7 @@ class FileSystem:
                 existing_owner = existing_top_dir[1]
                 if new_node.is_proper_subtree_of(existing_top_tree.path):
                     if existing_owner == owner:
-                        merge_two_trees_file(new_node, existing_top_tree)
+                        add_file_to_dir(new_node, existing_top_tree)
                         if self.if_hook:
                             hook(
                                 f"Merge file {new_path.path} into {existing_top_tree.path.path}"
@@ -274,6 +283,6 @@ if __name__ == "__main__":
     fs.remove("~/.config/nvim/lua/lualine/themes/ras.lua")
     fs.remove("~/.config/nvim/lua/lualine/")
     fs.add("~/.config/nvim", "nvim")
-    json_str = fs.to_json()
-    load_fs = FileSystem.from_json(json_str)
-    print(load_fs.to_json() == json_str)
+    fs.add("~/.config/nvim/lua/lualine/themes/ras.lua", "nvim")
+    fs.add("~/.config/nvim/lua/config/lazy.lua", "nvim")
+    print(fs)
