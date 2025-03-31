@@ -1,4 +1,5 @@
-from fs_utils import Path, FileType
+from fs_utils import Path, FileType, Dir
+from typing import List
 import shutil
 import os
 
@@ -33,6 +34,39 @@ class Hooker:
         if os.path.exists(target_path):
             return
         shutil.copy2(source_path, target_path)
+
+    def add_dir(self, path: Path, merge_list: List[Dir]):
+        source_path = path.path
+        repo_dir = (
+            REPOUSERPATH.path if path.type == FileType.USER else REPOSYSTEMPATH.path
+        )
+        for merge in merge_list:
+            if path == merge.path:
+                merge_list.remove(merge)
+                return
+        target_path = os.path.join(repo_dir, path.relative_path)
+        ensure_dir_exists(target_path)
+        for name in os.listdir(source_path):
+            full_path = os.path.join(source_path, name)
+            if os.path.isdir(full_path):
+                dir_path = Path(full_path)
+                self.add_dir(dir_path, merge_list)
+            else:
+                file_path = Path(full_path)
+                self.add_file(file_path)
+
+    def remove(self, path: Path) -> bool:
+        repo_dir = (
+            REPOUSERPATH.path if path.type == FileType.USER else REPOSYSTEMPATH.path
+        )
+        target_path = os.path.join(repo_dir, path.relative_path)
+        if os.path.exists(target_path):
+            if os.path.isdir(target_path):
+                shutil.rmtree(target_path)
+                return True
+            os.remove(target_path)
+            return True
+        return False
 
 
 if __name__ == "__main__":

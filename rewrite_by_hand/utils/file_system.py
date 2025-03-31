@@ -1,7 +1,7 @@
 from typing import List, Dict, Optional, Tuple
 import os
 import json
-from hook import hook
+from hook import Hooker
 from fs_utils import USERPATH, SYSTEMPATH, Path, File, Dir, Owner
 
 
@@ -15,7 +15,6 @@ def merge_two_trees_dir(source: Dir, target: Dir) -> None:
     current_dir = target
     for part in source_parts[len(target_parts) : -1]:
         if part not in current_dir.subdirs:
-            # raise ValueError(f"Missing directory in path: {part}")
             current_dir.subdirs[part] = Dir(
                 Path(os.path.join(current_dir.path.path, part)), auto_fill=False
             )
@@ -52,6 +51,8 @@ class FileSystem:
             Tuple[List[Tuple[Dir, Owner]], List[Tuple[File, Owner]]],
         ] = (([], []), ([], []))
         self.if_hook = if_hook
+        if if_hook:
+            self.hooker = Hooker()
 
     def add(self, path_str: str, owner: Owner) -> None:
         new_path = Path(path_str)
@@ -69,9 +70,7 @@ class FileSystem:
                     if existing_owner == owner:
                         merge_two_trees_dir(new_node, existing_top_tree)
                         if self.if_hook:
-                            hook(
-                                f"Merge directory {new_path.path} into {existing_top_tree.path.path}"
-                            )
+                            self.hooker.add_dir(new_node.path, [])
                         return
                     else:
                         raise ValueError(
@@ -106,8 +105,8 @@ class FileSystem:
                 self.forest[new_path.type.value][1].remove(existing_top_tree)
             self.forest[new_path.type.value][0].append((new_node, owner))
             if self.if_hook:
-                hook(
-                    f"Add a top directory {new_node.path.path} merged with dir:{[existing_top_tree[0].path.path for existing_top_tree in dir_wait_for_merge_to]} and file:{[existing_top_tree[0].path.path for existing_top_tree in file_wait_for_merge_to]} with owner {owner}"
+                self.hooker.add_dir(
+                    new_node.path, [dir[0] for dir in dir_wait_for_merge_to]
                 )
         else:
             new_node = File(new_path)
@@ -123,13 +122,12 @@ class FileSystem:
                     if existing_owner == owner:
                         add_file_to_dir(new_node, existing_top_tree)
                         if self.if_hook:
-                            hook(
-                                f"Add file {new_path.path} into {existing_top_tree.path.path}"
-                            )
+                            self.hooker.add_file(new_node.path)
                         return
             self.forest[new_path.type.value][1].append((new_node, owner))
             if self.if_hook:
-                hook(f"Add a top file {new_node.path.path} with owner {owner}")
+                # hook(f"Add a top file {new_node.path.path} with owner {owner}")
+                self.hooker.add_file(new_node.path)
 
     def remove(self, path_str: str) -> None:
         target_path = Path(path_str)
@@ -140,7 +138,7 @@ class FileSystem:
                 if existing_top_tree.path == target_path:
                     self.forest[target_path.type.value][0].remove(existing_top_dir)
                     if self.if_hook:
-                        hook(f"Remove top directory {target_path.path}")
+                        self.hooker.remove(target_path)
                     return
                 if target_path.path.startswith(existing_top_tree.path.path):
                     parent = self._find_parent_dir(existing_top_tree, target_path)
@@ -148,9 +146,7 @@ class FileSystem:
                         name = target_path.name
                         self._remove_from_parent(parent, name, isdir)
                         if self.if_hook:
-                            hook(
-                                f"Remove directory {target_path.path} from {parent.path.path}"
-                            )
+                            self.hooker.remove(target_path)
                         return
             raise ValueError(f"Path not found: {path_str}")
         else:
@@ -159,7 +155,7 @@ class FileSystem:
                 if existing_top_tree.path == target_path:
                     self.forest[target_path.type.value][1].remove(existing_top_file)
                     if self.if_hook:
-                        hook(f"Remove top file {target_path.path}")
+                        self.hooker.remove(target_path)
                     return
             for existing_top_tree, _ in self.forest[target_path.type.value][0]:
                 if target_path.path.startswith(existing_top_tree.path.path):
@@ -168,9 +164,7 @@ class FileSystem:
                         name = target_path.name
                         self._remove_from_parent(parent, name, isdir)
                         if self.if_hook:
-                            hook(
-                                f"Remove file {target_path.path} from {parent.path.path}"
-                            )
+                            self.hooker.remove(target_path)
                         return
             raise ValueError(f"Path not found: {path_str}")
 
@@ -279,9 +273,8 @@ if __name__ == "__main__":
     fs.add("/etc/keyd", "keyd")
     fs.add("/etc/kmscon", "kmscon")
     fs.add("~/.zshrc", "zsh")
-    fs.add("~/.config/nvim/lua", "nvim")
+    fs.add("~/.config/nvim/lua/", "nvim")
     fs.remove("~/.config/nvim/lua/lualine/themes/ras.lua")
-    fs.remove("~/.config/nvim/lua/lualine/")
+    fs.remove("~/.config/nvim/lua/lualine")
     fs.add("~/.config/nvim", "nvim")
-    fs.add("~/.config/nvim/lua/lualine/themes/ras.lua", "nvim")
-    print(fs)
+    # print(fs)
