@@ -27,7 +27,7 @@ def create_parser() -> argparse.ArgumentParser:
     """Create the command line argument parser."""
     parser = argparse.ArgumentParser(
         prog="dot",
-        description="Dot: A dotfile management tool for Linux systems.",
+        description="Dot: A simple dotfile management tool for Linux systems.",
         epilog="For more information, visit https://github.com/Acomage/dot-cli-py",
     )
 

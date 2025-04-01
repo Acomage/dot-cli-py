@@ -7,7 +7,7 @@ REPO_USER_PATH = os.path.join(REPOPATH, "user")
 REPO_SYSTEM_PATH = os.path.join(REPOPATH, "system")
 
 DEFAULT_LANGUAGE = "en"
-MESSAGES_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "i18n")
+MESSAGES_PATH = "rewrite_by_hand.data.i18n"
 
 README_ORIGIN = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "data", "README.md"
