@@ -3,7 +3,7 @@ import os
 import sys
 from typing import Dict, Any, Optional
 
-from ..data.variables import DEFAULT_LANGUAGE, MESSAGES_PATH
+from rewrite_by_hand.data.variables import DEFAULT_LANGUAGE, MESSAGES_PATH
 
 
 class OutputManager:

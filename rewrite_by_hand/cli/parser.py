@@ -1,21 +1,26 @@
 import argparse
 
-from dot.cli.commands import (
-    # cmd_init,
-    cmd_add,
-    cmd_remove,
-    # cmd_edit,
-    # cmd_apply,
-    # cmd_sync,
-    # cmd_diff,
-    # cmd_push,
-    # cmd_pull,
-    # cmd_update,
-    # cmd_remote,
-    # cmd_manage,
-    # cmd_conflict,
-    # cmd_clean,
-)
+# from rewrite_by_hand.cli.commands import (
+#     # cmd_init,
+#     cmd_add,
+#     cmd_remove,
+#     # cmd_edit,
+#     # cmd_apply,
+#     # cmd_sync,
+#     # cmd_diff,
+#     # cmd_push,
+#     # cmd_pull,
+#     # cmd_update,
+#     # cmd_remote,
+#     # cmd_manage,
+#     # cmd_conflict,
+#     # cmd_clean,
+# )
+from rewrite_by_hand.cli.commands.init import cmd_init
+# from rewrite_by_hand.cli.commands.add import cmd_add
+# from rewrite_by_hand.cli.commands.remove import cmd_remove
+
+from rewrite_by_hand.cli.commands.clean import cmd_clean
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -32,29 +37,29 @@ def create_parser() -> argparse.ArgumentParser:
     subparsers.required = True
 
     # init command
-    # init_parser = subparsers.add_parser("init", help="Initialize a dotfiles repository")
-    # init_parser.add_argument(
-    #     "url", nargs="?", help="URL of a remote repository to clone"
-    # )
-    # init_parser.set_defaults(func=cmd_init)
+    init_parser = subparsers.add_parser("init", help="Initialize a dotfiles repository")
+    init_parser.add_argument(
+        "url", nargs="?", help="URL of a remote repository to clone"
+    )
+    init_parser.set_defaults(func=cmd_init)
 
     # add command
-    add_parser = subparsers.add_parser(
-        "add", help="Add a file or directory to the repository"
-    )
-    add_parser.add_argument("path", help="Path to the file or directory")
-    add_parser.add_argument("software", help="Name of the software the file belongs to")
-    add_parser.set_defaults(func=cmd_add)
+    # add_parser = subparsers.add_parser(
+    #     "add", help="Add a file or directory to the repository"
+    # )
+    # add_parser.add_argument("path", help="Path to the file or directory")
+    # add_parser.add_argument("software", help="Name of the software the file belongs to")
+    # add_parser.set_defaults(func=cmd_add)
 
     # remove command
-    remove_parser = subparsers.add_parser(
-        "remove", help="Remove a file or directory from the repository"
-    )
-    remove_parser.add_argument("path", help="Path to the file or directory")
-    remove_parser.add_argument(
-        "software", help="Name of the software the file belongs to"
-    )
-    remove_parser.set_defaults(func=cmd_remove)
+    # remove_parser = subparsers.add_parser(
+    #     "remove", help="Remove a file or directory from the repository"
+    # )
+    # remove_parser.add_argument("path", help="Path to the file or directory")
+    # remove_parser.add_argument(
+    #     "software", help="Name of the software the file belongs to"
+    # )
+    # remove_parser.set_defaults(func=cmd_remove)
 
     # edit command
     # edit_parser = subparsers.add_parser("edit", help="Edit a file in the repository")
@@ -127,8 +132,8 @@ def create_parser() -> argparse.ArgumentParser:
     # )
     # conflict_parser.set_defaults(func=cmd_conflict)
     #
-    # # clean command
-    # clean_parser = subparsers.add_parser("clean", help="Clean up the repository")
-    # clean_parser.set_defaults(func=cmd_clean)
+    # clean command
+    clean_parser = subparsers.add_parser("clean", help="Clean up the repository")
+    clean_parser.set_defaults(func=cmd_clean)
 
     return parser

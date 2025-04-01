@@ -2,7 +2,8 @@ from typing import List
 import shutil
 import os
 
-from rewrite_by_hand.utils.fs_utils import Path, FileType, Dir
+from rewrite_by_hand.utils.fs_utils import ensure_dir_exists
+from rewrite_by_hand.utils.fs_type import Path, FileType, Dir
 from rewrite_by_hand.data.variables import REPO_USER_PATH, REPO_SYSTEM_PATH
 
 
@@ -12,15 +13,6 @@ def hook(command: str):
 
 REPOUSERPATH = Path(REPO_USER_PATH)
 REPOSYSTEMPATH = Path(REPO_SYSTEM_PATH)
-
-
-def ensure_dir_exists(path: str) -> bool:
-    try:
-        os.makedirs(path, exist_ok=True)
-        return True
-    except OSError:
-        print(f"Error creating directory: {path} with error: {OSError}")
-        return False
 
 
 class Hooker:

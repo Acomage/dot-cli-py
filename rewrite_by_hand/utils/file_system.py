@@ -4,7 +4,7 @@ import json
 
 from rewrite_by_hand.utils.hook import Hooker
 from rewrite_by_hand.data.variables import USERPATH, SYSTEMPATH
-from rewrite_by_hand.utils.fs_utils import Path, File, Dir, Owner
+from rewrite_by_hand.utils.fs_type import Path, File, Dir, Owner
 
 
 def merge_two_trees_dir(source: Dir, target: Dir) -> None:

@@ -1,10 +1,15 @@
 from typing import Any
-from rewrite_by_hand.core.health import checker, HealthStatus
 import shutil
 import os
 
-from rewrite_by_hand.data.variables import REPOPATH, README_FIRST_LINE
-from rewrite_by_hand.utils.hook import ensure_dir_exists
+from rewrite_by_hand.core.health import checker, HealthStatus
+from rewrite_by_hand.data.variables import (
+    REPOPATH,
+    README_FIRST_LINE,
+    README_ORIGIN,
+    CONFIG_ORIGIN,
+)
+from rewrite_by_hand.utils.fs_utils import ensure_dir_exists
 from rewrite_by_hand.core.git import git_manager
 
 
@@ -22,8 +27,10 @@ def cmd_init(args: Any):
                 f"We find that there is not a correct REAMDE.md file in {REPOPATH}. It may means that {REPOPATH} is created by other tools. If you are sure that {REPOPATH} is a correct repo, please added the {README_FIRST_LINE} to the first line of the README.md file. Or you can read the https://github.com/Acomage/dot-cli-py to learn how to set another path as repo path."
             )
         case _:
-            input("The repo is already initialized. Do you want to reinit it? (y/n)")
-            if input().lower() != "y":
+            sure = input(
+                "The repo is already initialized. Do you want to reinit it? (y/n)"
+            )
+            if sure.lower() != "y":
                 exit(0)
             shutil.rmtree(REPOPATH)
             ensure_dir_exists(REPOPATH)
@@ -63,7 +70,7 @@ def cmd_init(args: Any):
     _create_readme()
 
     # Create config.json
-    # TODO: Implement config.json creation
+    _create_config()
 
     # Create local_config.json
     _create_local_config()
@@ -88,13 +95,14 @@ def _create_readme() -> None:
     readme_path = os.path.join(REPOPATH, "README.md")
 
     try:
-        with open(readme_path, "w", encoding="utf-8") as f:
-            f.write(README_FIRST_LINE)
-            f.write("# Dotfiles\n\n")
-            f.write("This repository is managed by the Dot CLI tool.\n\n")
-            f.write(
-                "For more information, visit https://github.com/Acomage/dot-cli-py\n"
-            )
+        # with open(readme_path, "w", encoding="utf-8") as f:
+        #     f.write(README_FIRST_LINE)
+        #     f.write("# Dotfiles\n\n")
+        #     f.write("This repository is managed by the Dot CLI tool.\n\n")
+        #     f.write(
+        #         "For more information, visit https://github.com/Acomage/dot-cli-py\n"
+        #     )
+        shutil.copy2(README_ORIGIN, readme_path)
     except OSError as e:
         print(f"Error creating README.md: {e}")
 
@@ -113,9 +121,24 @@ def _create_gitignore() -> None:
         print(f"Error creating .gitignore: {e}")
 
 
+def _create_config() -> None:
+    """Create the config.json file."""
+    readme_path = os.path.join(REPOPATH, "config.json")
+
+    try:
+        shutil.copy2(CONFIG_ORIGIN, readme_path)
+    except OSError as e:
+        print(f"Error creating README.md: {e}")
+
+
 def _create_local_config() -> None:
     """Create the local_config.json file."""
-    # TODO: Implement local_config.json creation
+    readme_path = os.path.join(REPOPATH, "local_config.json")
+
+    try:
+        shutil.copy2(CONFIG_ORIGIN, readme_path)
+    except OSError as e:
+        print(f"Error creating README.md: {e}")
 
 
 def _create_conflict_dirs() -> None:
