@@ -1,8 +1,10 @@
 from typing import List, Dict, Optional, Tuple
 import os
 import json
-from hook import Hooker
-from fs_utils import USERPATH, SYSTEMPATH, Path, File, Dir, Owner
+
+from rewrite_by_hand.utils.hook import Hooker
+from rewrite_by_hand.data.variables import USERPATH, SYSTEMPATH
+from rewrite_by_hand.utils.fs_utils import Path, File, Dir, Owner
 
 
 def merge_two_trees_dir(source: Dir, target: Dir) -> None:
@@ -269,7 +271,7 @@ class FileSystem:
 
 
 if __name__ == "__main__":
-    fs = FileSystem(if_hook=True)
+    fs = FileSystem(if_hook=False)
     fs.add("/etc/keyd", "keyd")
     fs.add("/etc/kmscon", "kmscon")
     fs.add("~/.zshrc", "zsh")
@@ -277,4 +279,4 @@ if __name__ == "__main__":
     fs.remove("~/.config/nvim/lua/lualine/themes/ras.lua")
     fs.remove("~/.config/nvim/lua/lualine")
     fs.add("~/.config/nvim", "nvim")
-    # print(fs)
+    print(fs)

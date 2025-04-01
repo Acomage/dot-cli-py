@@ -2,8 +2,7 @@ from typing import List, Dict, TypeAlias
 import os
 from enum import Enum
 
-USERPATH = os.path.expanduser("~")
-SYSTEMPATH = "/"
+from rewrite_by_hand.data.variables import USERPATH, SYSTEMPATH, REPOPATH
 
 
 class FileType(Enum):
@@ -19,10 +18,10 @@ class Path:
         self.path = os.path.expanduser(path)
         if not os.path.exists(self.path):
             raise FileNotFoundError(f"Path {path} does not exist.")
-        if os.path.samefile(self.path, USERPATH) or os.path.samefile(
-            self.path, SYSTEMPATH
-        ):
-            raise ValueError("Path cannot be ~ or /")
+        if REPOPATH.startswith(self.path):
+            raise ValueError(
+                f"You cannot use a path containing the {REPOPATH} or there is a recursive error."
+            )
         self.type = FileType.USER if self.path.startswith(USERPATH) else FileType.SYSTEM
         self.relative_path = (
             os.path.relpath(self.path, USERPATH)
