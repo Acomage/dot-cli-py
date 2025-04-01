@@ -17,3 +17,6 @@ with open(README_ORIGIN, "r") as f:
 CONFIG_ORIGIN = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "data", "config.json"
 )
+IGNORE_ORIGIN = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "data", "ignore"
+)

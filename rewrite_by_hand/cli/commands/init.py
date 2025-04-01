@@ -8,6 +8,7 @@ from rewrite_by_hand.data.variables import (
     README_FIRST_LINE,
     README_ORIGIN,
     CONFIG_ORIGIN,
+    IGNORE_ORIGIN,
 )
 from rewrite_by_hand.utils.fs_utils import ensure_dir_exists
 from rewrite_by_hand.core.git import git_manager
@@ -112,11 +113,12 @@ def _create_gitignore() -> None:
     gitignore_path = os.path.join(REPOPATH, ".gitignore")
 
     try:
-        with open(gitignore_path, "w", encoding="utf-8") as f:
-            f.write("# Local configuration\n")
-            f.write("local_config.json\n\n")
-            f.write("# Conflict files\n")
-            f.write("conflict/\n")
+        # with open(gitignore_path, "w", encoding="utf-8") as f:
+        #     f.write("# Local configuration\n")
+        #     f.write("local_config.json\n\n")
+        #     f.write("# Conflict files\n")
+        #     f.write("conflict/\n")
+        shutil.copy2(IGNORE_ORIGIN, gitignore_path)
     except OSError as e:
         print(f"Error creating .gitignore: {e}")
 
