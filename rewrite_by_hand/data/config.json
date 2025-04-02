@@ -1,13 +1,12 @@
 {
-  "file_system": {
-    "USER": {
-      "top_dirs": [],
-      "top_files": []
-    },
-    "SYSTEM": {
-      "top_dirs": [],
-      "top_files": []
-    }
+  "USER": {
+    "top_dirs": [],
+    "top_files": [],
+    "conflict_files": []
   },
-  "conflict_files": []
+  "SYSTEM": {
+    "top_dirs": [],
+    "top_files": [],
+    "conflict_files": []
+  }
 }
