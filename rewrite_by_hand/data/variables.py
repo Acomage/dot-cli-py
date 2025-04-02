@@ -1,5 +1,6 @@
 import os
 
+VARIABLES_PATH = os.path.abspath(__file__)
 USERPATH = os.path.expanduser("~")
 SYSTEMPATH = "/"
 REPOPATH = os.path.expanduser("~/.dotfiles")

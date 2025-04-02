@@ -6,14 +6,21 @@ from rewrite_by_hand.data.variables import DEFAULT_LANGUAGE, MESSAGES_PATH
 
 
 class OutputManager:
-    def __init__(self, lang: str = "en", fallback_lang: str = DEFAULT_LANGUAGE):
+    def __init__(
+        self, lang: str = DEFAULT_LANGUAGE, fallback_lang: str = DEFAULT_LANGUAGE
+    ):
         """
         :param lang: 目标语言代码 (如 "en"/"zh")
         :param fallback_lang: 回退语言代码
         """
         self.lang = lang
         self.fallback_lang = fallback_lang
-        self._message_modules = {"output": None, "error": None, "prompt": None}
+        self._message_modules = {
+            "output": None,
+            "error": None,
+            "prompt": None,
+            "help": None,
+        }
         self._load_language()
 
     def _load_language(self):
@@ -33,9 +40,13 @@ class OutputManager:
         # 回退逻辑
         if not target_module:
             target_module = try_import(self.fallback_lang)
+            print(
+                f"Warning: language module: {self.lang} not found, falling back to {self.fallback_lang}",
+                file=sys.stderr,
+            )
             if not target_module:
                 raise ImportError(
-                    f"无法加载语言模块：{self.lang} 和 {self.fallback_lang}"
+                    f"Can not load language module: {self.lang} and {self.fallback_lang}"
                 )
 
         self._message_modules.update(
@@ -43,11 +54,12 @@ class OutputManager:
                 "output": getattr(target_module, "OutputText", None),
                 "error": getattr(target_module, "ErrorText", None),
                 "prompt": getattr(target_module, "PromptText", None),  # 新增
+                "help": getattr(target_module, "HelpText", None),  # 新增
             }
         )
 
         if None in self._message_modules.values():
-            raise ValueError(f"语言模块 {self.lang} 缺少必要的 Enum 类")
+            raise ValueError(f"Invalid language module structure: {self.lang}")
 
     def out(self, key: str, *args, **kwargs):
         """输出普通信息到 stdout"""
@@ -56,6 +68,7 @@ class OutputManager:
     def err(self, key: str, *args, **kwargs):
         """输出错误信息到 stderr"""
         self._print("error", key, sys.stderr, *args, **kwargs)
+        self._print("help", "See_More_Help", sys.stderr, *args, **kwargs)
 
     def _print(self, msg_type: str, key: str, stream, *args, **kwargs):
         """通用打印方法"""
@@ -65,13 +78,13 @@ class OutputManager:
         try:
             message = getattr(enum_cls, key).value
         except AttributeError:
-            message = f"[MISSING KEY] {key}"
+            message = f"[MISSING KEY] {key} of {msg_type}"
 
         # 格式化消息
         try:
             formatted = message.format(*args, **kwargs)
         except (IndexError, KeyError):
-            formatted = f"[FORMAT ERROR] {message}"
+            formatted = f"[FORMAT ERROR] {message} with {args} and {kwargs}"
 
         print(formatted, file=stream)
 
@@ -95,17 +108,21 @@ class OutputManager:
         try:
             prompt_text = getattr(enum_cls, key).value
         except AttributeError:
-            prompt_text = f"[MISSING KEY] {key}"
+            prompt_text = f"[MISSING KEY] {key} of prompt"
 
         # 处理默认值显示逻辑
         if default is not None:
-            prompt_text += f" ({default})" if "{}" not in prompt_text else ""
+            try:
+                default_text = getattr(enum_cls, "DEFAULT").value
+            except AttributeError:
+                default_text = "default value: "
+            prompt_text += f" ({default_text}{default}):"
 
         # 格式化提示信息
         try:
             formatted_prompt = prompt_text.format(*args, **kwargs)
         except (IndexError, KeyError):
-            formatted_prompt = f"[FORMAT ERROR] {prompt_text}"
+            formatted_prompt = f"[FORMAT ERROR] {prompt_text} with {args} and {kwargs}"
 
         # 构建完整提示（包含重试逻辑）
         retry_prompt = self._get_message("prompt", "RETRY_INPUT", default=">>> ")
@@ -133,7 +150,18 @@ class OutputManager:
         try:
             return getattr(enum_cls, key).value
         except AttributeError:
-            return default or f"[MISSING KEY] {key}"
+            return default or f"[MISSING KEY] {key} of {msg_type}"
+
+
+output_manager = OutputManager()
+
+
+def validate_yes_no(input_str: str) -> bool:
+    return input_str.lower() in ["y", "n"]
+
+
+def validate_yes_no_all(input_str: str) -> bool:
+    return input_str.lower() in ["y", "n", "a"]
 
 
 if __name__ == "__main__":
@@ -144,7 +172,7 @@ if __name__ == "__main__":
     # 显示：请输入姓名：
 
     # 带默认值和格式化
-    age = manager.prompt("INPUT_AGE", default_age=18)
+    age = manager.prompt("INPUT_AGE", default=18)
     # 显示：请输入年龄（默认18）：
 
     # 带类型验证
@@ -161,3 +189,4 @@ if __name__ == "__main__":
 
     # 复杂格式
     date = manager.prompt("INPUT_DATE", year=2023, default="2023-01-01")
+    print(f"name: {name},\nage: {age},\nheight: {height},\ndate: {date}")
