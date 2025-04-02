@@ -49,9 +49,17 @@ def add_file_to_dir(source: File, target: Dir) -> None:
 class FileSystem:
     def __init__(self, if_hook: bool = False):
         self.forest: Tuple[
-            Tuple[List[Tuple[Dir, Owner]], List[Tuple[File, Owner]]],
-            Tuple[List[Tuple[Dir, Owner]], List[Tuple[File, Owner]]],
-        ] = (([], []), ([], []))
+            Tuple[
+                List[Tuple[Dir, Owner]],
+                List[Tuple[File, Owner]],
+                List[Tuple[File, Owner]],
+            ],
+            Tuple[
+                List[Tuple[Dir, Owner]],
+                List[Tuple[File, Owner]],
+                List[Tuple[File, Owner]],
+            ],
+        ] = (([], [], []), ([], [], []))
         self.if_hook = if_hook
         if if_hook:
             self.hooker = Hooker()
@@ -128,7 +136,6 @@ class FileSystem:
                         return
             self.forest[new_path.type.value][1].append((new_node, owner))
             if self.if_hook:
-                # hook(f"Add a top file {new_node.path.path} with owner {owner}")
                 self.hooker.add_file(new_node.path)
 
     def remove(self, path_str: str) -> None:
@@ -213,6 +220,10 @@ class FileSystem:
                     {"tree": self._serialize_node_file(node[0], True), "owner": node[1]}
                     for node in self.forest[0][1]
                 ],
+                "conflict_files": [
+                    {"tree": self._serialize_node_file(node[0], True), "owner": node[1]}
+                    for node in self.forest[0][2]
+                ],
             },
             "SYSTEM": {
                 "top_dirs": [
@@ -222,6 +233,10 @@ class FileSystem:
                 "top_files": [
                     {"tree": self._serialize_node_file(node[0], True), "owner": node[1]}
                     for node in self.forest[1][1]
+                ],
+                "conflict_files": [
+                    {"tree": self._serialize_node_file(node[0], True), "owner": node[1]}
+                    for node in self.forest[1][2]
                 ],
             },
         }
@@ -250,7 +265,7 @@ class FileSystem:
     @classmethod
     def from_json(cls, json_str: str) -> "FileSystem":
         fs = FileSystem()
-        fs.forest = (([], []), ([], []))
+        fs.forest = (([], [], []), ([], [], []))
         data = json.loads(json_str)
         for top_dir in data["USER"].get("top_dirs", []):
             node = cls._deserialize_dir_node(top_dir["tree"], USERPATH)
@@ -258,12 +273,18 @@ class FileSystem:
         for top_file in data["USER"].get("top_files", []):
             node = cls._deserialize_file_node(top_file["tree"], USERPATH)
             fs.forest[0][1].append((node, top_file["owner"]))
+        for conflict_file in data["USER"].get("conflict_files", []):
+            node = cls._deserialize_file_node(conflict_file["tree"], USERPATH)
+            fs.forest[0][2].append((node, conflict_file["owner"]))
         for top_dir in data["SYSTEM"].get("top_dirs", []):
             node = cls._deserialize_dir_node(top_dir["tree"], SYSTEMPATH)
             fs.forest[1][0].append((node, top_dir["owner"]))
         for top_file in data["SYSTEM"].get("top_files", []):
             node = cls._deserialize_file_node(top_file["tree"], SYSTEMPATH)
             fs.forest[1][1].append((node, top_file["owner"]))
+        for conflict_file in data["SYSTEM"].get("conflict_files", []):
+            node = cls._deserialize_file_node(conflict_file["tree"], SYSTEMPATH)
+            fs.forest[1][2].append((node, conflict_file["owner"]))
         return fs
 
     def __repr__(self) -> str:
@@ -280,3 +301,6 @@ if __name__ == "__main__":
     fs.remove("~/.config/nvim/lua/lualine")
     fs.add("~/.config/nvim", "nvim")
     print(fs)
+    json_str = fs.to_json()
+    loaded_fs = FileSystem.from_json(json_str)
+    print(loaded_fs.to_json() == json_str)
