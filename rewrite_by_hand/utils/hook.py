@@ -63,6 +63,12 @@ class Hooker:
             return True
         return False
 
+    def add_conflict(self, path: Path):
+        pass
+
+    def remove_conflict(self, path: Path):
+        pass
+
 
 if __name__ == "__main__":
     hk = Hooker()

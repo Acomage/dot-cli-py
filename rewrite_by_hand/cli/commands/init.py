@@ -55,7 +55,6 @@ def cmd_init(args: Any):
         # Create necessary files that might be gitignored
         _create_gitignore()
         _create_local_config()
-        _create_conflict_dirs()
 
         sys.exit(0)
 
@@ -67,7 +66,7 @@ def cmd_init(args: Any):
         sys.exit(1)
 
     # Create standard directories
-    for dir_name in ["user", "system", "conflict/user", "conflict/system"]:
+    for dir_name in ["user", "system"]:
         dir_path = os.path.join(REPOPATH, dir_name)
         if not ensure_dir_exists(dir_path):
             output_manager.err("Init_Tell_User_To_Clean", REPOPATH=REPOPATH)
@@ -143,19 +142,3 @@ def _create_local_config() -> None:
         output_manager.err("Init_Create_Local_Config_Failed", output=e)
         output_manager.err("Init_Tell_User_To_Clean", REPOPATH=REPOPATH)
         sys.exit(1)
-
-
-def _create_conflict_dirs() -> None:
-    """Create the conflict directories."""
-    dotfiles_path = os.path.expanduser("~/.dotfiles")
-
-    for dir_name in ["conflict/user", "conflict/system"]:
-        dir_path = os.path.join(dotfiles_path, dir_name)
-        try:
-            os.makedirs(dir_path, exist_ok=True)
-        except OSError as e:
-            output_manager.err(
-                "Init_Create_Conflict_Dirs_Failed", dir=dir_path, output=e
-            )
-            output_manager.err("Init_Tell_User_To_Clean", REPOPATH=REPOPATH)
-            sys.exit(1)
