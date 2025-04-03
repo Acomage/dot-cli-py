@@ -177,62 +177,6 @@ class FileSystem:
                     return
             raise ValueError(f"Path not found: {path_str}")
 
-    def add_conflict(self, path_str: str) -> None:
-        target_path = Path(path_str)
-        if target_path.is_dir:
-            raise ValueError("Cannot add a conflict directory, only files are allowed")
-        else:
-            for existing_top_tree, _ in self.forest[target_path.type.value][1]:
-                if target_path.path == existing_top_tree.path:
-                    if existing_top_tree.conflict:
-                        raise ValueError(
-                            f"File {path_str} already has a conflict version"
-                        )
-                    existing_top_tree.conflict = True
-                    # TODO: add hook
-                    return
-            for existing_top_tree, _ in self.forest[target_path.type.value][0]:
-                if target_path.is_proper_subtree_of(existing_top_tree.path):
-                    parent = self._find_parent_dir(existing_top_tree, target_path)
-                    if target_path.name in parent.files:
-                        if parent.files[target_path.name].conflict:
-                            raise ValueError(
-                                f"File {path_str} already has a conflict version"
-                            )
-                        parent.files[target_path.name].conflict = True
-                        # TODO: add hook
-                        return
-            raise ValueError(f"File {path_str} is not managed")
-
-    def remove_conflict(self, path_str: str) -> None:
-        target_path = Path(path_str)
-        if target_path.is_dir:
-            raise ValueError(
-                "Cannot add a conflict directory, only files are allowed, so you cannot remove it"
-            )
-        else:
-            for existing_top_tree, _ in self.forest[target_path.type.value][1]:
-                if target_path.path == existing_top_tree.path:
-                    if not existing_top_tree.conflict:
-                        raise ValueError(
-                            f"File {path_str} does not have a conflict version"
-                        )
-                    existing_top_tree.conflict = False
-                    # TODO: add hook
-                    return
-            for existing_top_tree, _ in self.forest[target_path.type.value][0]:
-                if target_path.is_proper_subtree_of(existing_top_tree.path):
-                    parent = self._find_parent_dir(existing_top_tree, target_path)
-                    if target_path.name in parent.files:
-                        if not parent.files[target_path.name].conflict:
-                            raise ValueError(
-                                f"File {path_str} does not have a conflict version"
-                            )
-                        parent.files[target_path.name].conflict = False
-                        # TODO: add hook
-                        return
-            raise ValueError(f"File {path_str} is not managed")
-
     def _find_parent_dir(self, root: Dir, target: Path) -> Dir:
         current = root
         for part in target.cut_path[len(root.path.cut_path) : -1]:
@@ -265,7 +209,7 @@ class FileSystem:
     @staticmethod
     def _serialize_node_file(node: File, full_path: bool = False) -> Dict:
         name = node.path.relative_path if full_path else node.name
-        return {"name": name, "conflict": node.conflict}
+        return {"name": name, "blocks": node.blocks}
 
     def to_json(self) -> str:
         dict_ = {
@@ -310,7 +254,7 @@ class FileSystem:
     def _deserialize_file_node(data: Dict, parent_path: str = "") -> File:
         full_path = os.path.join(parent_path, data["name"])
         path = Path(full_path)
-        return File(path, data["conflict"])
+        return File(path, data["blocks"])
 
     @classmethod
     def from_json(cls, json_str: str) -> "FileSystem":

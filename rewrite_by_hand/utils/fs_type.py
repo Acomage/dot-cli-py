@@ -1,4 +1,4 @@
-from typing import List, Dict, TypeAlias
+from typing import List, Dict, TypeAlias, Optional
 import os
 from enum import Enum
 
@@ -64,11 +64,13 @@ class Node:
 
 
 class File(Node):
-    def __init__(self, path: Path, conflict: bool = False):
+    def __init__(self, path: Path, blocks: Optional[List[str]] = None):
         if path.is_dir:
             raise ValueError("File cannot be initialized with directory path")
         super().__init__(path)
-        self.conflict: bool = conflict
+        if not blocks:
+            blocks = []
+        self.blocks = blocks
 
 
 class Dir(Node):

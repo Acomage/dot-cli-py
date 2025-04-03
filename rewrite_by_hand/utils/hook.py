@@ -7,10 +7,6 @@ from rewrite_by_hand.utils.fs_type import Path, FileType, Dir
 from rewrite_by_hand.data.variables import REPO_USER_PATH, REPO_SYSTEM_PATH
 
 
-def hook(command: str):
-    print(command)
-
-
 REPOUSERPATH = Path(REPO_USER_PATH)
 REPOSYSTEMPATH = Path(REPO_SYSTEM_PATH)
 
@@ -62,12 +58,6 @@ class Hooker:
             os.remove(target_path)
             return True
         return False
-
-    def add_conflict(self, path: Path):
-        pass
-
-    def remove_conflict(self, path: Path):
-        pass
 
 
 if __name__ == "__main__":
