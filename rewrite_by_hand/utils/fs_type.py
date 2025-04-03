@@ -40,6 +40,14 @@ class Path:
             return os.path.samefile(self.path, other.path)
         return False
 
+    def is_proper_subtree_of(self, other: "Path") -> bool:
+        other_parts = other.cut_path
+        self_parts = self.cut_path
+        return (
+            len(self_parts) > len(other_parts)
+            and self_parts[: len(other_parts)] == other_parts
+        )
+
 
 class Node:
     def __init__(self, path: Path):
@@ -56,10 +64,11 @@ class Node:
 
 
 class File(Node):
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, conflict: bool = False):
         if path.is_dir:
             raise ValueError("File cannot be initialized with directory path")
         super().__init__(path)
+        self.conflict: bool = conflict
 
 
 class Dir(Node):

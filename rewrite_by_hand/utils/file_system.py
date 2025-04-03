@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Tuple
 import os
 import json
 
@@ -52,14 +52,12 @@ class FileSystem:
             Tuple[
                 List[Tuple[Dir, Owner]],
                 List[Tuple[File, Owner]],
-                List[Tuple[File, Owner]],
             ],
             Tuple[
                 List[Tuple[Dir, Owner]],
                 List[Tuple[File, Owner]],
-                List[Tuple[File, Owner]],
             ],
-        ] = (([], [], []), ([], [], []))
+        ] = (([], []), ([], []))
         self.if_hook = if_hook
         if if_hook:
             self.hooker = Hooker()
@@ -134,6 +132,10 @@ class FileSystem:
                         if self.if_hook:
                             self.hooker.add_file(new_node.path)
                         return
+                    else:
+                        raise ValueError(
+                            f"There exists a super directory of {path_str} with a different owner: {existing_owner}"
+                        )
             self.forest[new_path.type.value][1].append((new_node, owner))
             if self.if_hook:
                 self.hooker.add_file(new_node.path)
@@ -151,12 +153,11 @@ class FileSystem:
                     return
                 if target_path.path.startswith(existing_top_tree.path.path):
                     parent = self._find_parent_dir(existing_top_tree, target_path)
-                    if parent:
-                        name = target_path.name
-                        self._remove_from_parent(parent, name, isdir)
-                        if self.if_hook:
-                            self.hooker.remove(target_path)
-                        return
+                    name = target_path.name
+                    self._remove_from_parent(parent, name, isdir)
+                    if self.if_hook:
+                        self.hooker.remove(target_path)
+                    return
             raise ValueError(f"Path not found: {path_str}")
         else:
             for existing_top_file in self.forest[target_path.type.value][1]:
@@ -169,19 +170,76 @@ class FileSystem:
             for existing_top_tree, _ in self.forest[target_path.type.value][0]:
                 if target_path.path.startswith(existing_top_tree.path.path):
                     parent = self._find_parent_dir(existing_top_tree, target_path)
-                    if parent:
-                        name = target_path.name
-                        self._remove_from_parent(parent, name, isdir)
-                        if self.if_hook:
-                            self.hooker.remove(target_path)
-                        return
+                    name = target_path.name
+                    self._remove_from_parent(parent, name, isdir)
+                    if self.if_hook:
+                        self.hooker.remove(target_path)
+                    return
             raise ValueError(f"Path not found: {path_str}")
 
-    def _find_parent_dir(self, root: Dir, target: Path) -> Optional[Dir]:
+    def add_conflict(self, path_str: str) -> None:
+        target_path = Path(path_str)
+        if target_path.is_dir:
+            raise ValueError("Cannot add a conflict directory, only files are allowed")
+        else:
+            for existing_top_tree, _ in self.forest[target_path.type.value][1]:
+                if target_path.path == existing_top_tree.path:
+                    if existing_top_tree.conflict:
+                        raise ValueError(
+                            f"File {path_str} already has a conflict version"
+                        )
+                    existing_top_tree.conflict = True
+                    # TODO: add hook
+                    return
+            for existing_top_tree, _ in self.forest[target_path.type.value][0]:
+                if target_path.is_proper_subtree_of(existing_top_tree.path):
+                    parent = self._find_parent_dir(existing_top_tree, target_path)
+                    if target_path.name in parent.files:
+                        if parent.files[target_path.name].conflict:
+                            raise ValueError(
+                                f"File {path_str} already has a conflict version"
+                            )
+                        parent.files[target_path.name].conflict = True
+                        # TODO: add hook
+                        return
+            raise ValueError(f"File {path_str} is not managed")
+
+    def remove_conflict(self, path_str: str) -> None:
+        target_path = Path(path_str)
+        if target_path.is_dir:
+            raise ValueError(
+                "Cannot add a conflict directory, only files are allowed, so you cannot remove it"
+            )
+        else:
+            for existing_top_tree, _ in self.forest[target_path.type.value][1]:
+                if target_path.path == existing_top_tree.path:
+                    if not existing_top_tree.conflict:
+                        raise ValueError(
+                            f"File {path_str} does not have a conflict version"
+                        )
+                    existing_top_tree.conflict = False
+                    # TODO: add hook
+                    return
+            for existing_top_tree, _ in self.forest[target_path.type.value][0]:
+                if target_path.is_proper_subtree_of(existing_top_tree.path):
+                    parent = self._find_parent_dir(existing_top_tree, target_path)
+                    if target_path.name in parent.files:
+                        if not parent.files[target_path.name].conflict:
+                            raise ValueError(
+                                f"File {path_str} does not have a conflict version"
+                            )
+                        parent.files[target_path.name].conflict = False
+                        # TODO: add hook
+                        return
+            raise ValueError(f"File {path_str} is not managed")
+
+    def _find_parent_dir(self, root: Dir, target: Path) -> Dir:
         current = root
         for part in target.cut_path[len(root.path.cut_path) : -1]:
             if part not in current.subdirs:
-                raise ValueError(f"Path not found: {target.path}")
+                raise ValueError(
+                    f"Path {target.path} not found in existing top directorys"
+                )
             current = current.subdirs[part]
         return current
 
@@ -207,7 +265,7 @@ class FileSystem:
     @staticmethod
     def _serialize_node_file(node: File, full_path: bool = False) -> Dict:
         name = node.path.relative_path if full_path else node.name
-        return {"name": name}
+        return {"name": name, "conflict": node.conflict}
 
     def to_json(self) -> str:
         dict_ = {
@@ -220,10 +278,6 @@ class FileSystem:
                     {"tree": self._serialize_node_file(node[0], True), "owner": node[1]}
                     for node in self.forest[0][1]
                 ],
-                "conflict_files": [
-                    {"tree": self._serialize_node_file(node[0], True), "owner": node[1]}
-                    for node in self.forest[0][2]
-                ],
             },
             "SYSTEM": {
                 "top_dirs": [
@@ -233,10 +287,6 @@ class FileSystem:
                 "top_files": [
                     {"tree": self._serialize_node_file(node[0], True), "owner": node[1]}
                     for node in self.forest[1][1]
-                ],
-                "conflict_files": [
-                    {"tree": self._serialize_node_file(node[0], True), "owner": node[1]}
-                    for node in self.forest[1][2]
                 ],
             },
         }
@@ -260,12 +310,12 @@ class FileSystem:
     def _deserialize_file_node(data: Dict, parent_path: str = "") -> File:
         full_path = os.path.join(parent_path, data["name"])
         path = Path(full_path)
-        return File(path)
+        return File(path, data["conflict"])
 
     @classmethod
     def from_json(cls, json_str: str) -> "FileSystem":
         fs = FileSystem()
-        fs.forest = (([], [], []), ([], [], []))
+        fs.forest = (([], []), ([], []))
         data = json.loads(json_str)
         for top_dir in data["USER"].get("top_dirs", []):
             node = cls._deserialize_dir_node(top_dir["tree"], USERPATH)
@@ -273,18 +323,12 @@ class FileSystem:
         for top_file in data["USER"].get("top_files", []):
             node = cls._deserialize_file_node(top_file["tree"], USERPATH)
             fs.forest[0][1].append((node, top_file["owner"]))
-        for conflict_file in data["USER"].get("conflict_files", []):
-            node = cls._deserialize_file_node(conflict_file["tree"], USERPATH)
-            fs.forest[0][2].append((node, conflict_file["owner"]))
         for top_dir in data["SYSTEM"].get("top_dirs", []):
             node = cls._deserialize_dir_node(top_dir["tree"], SYSTEMPATH)
             fs.forest[1][0].append((node, top_dir["owner"]))
         for top_file in data["SYSTEM"].get("top_files", []):
             node = cls._deserialize_file_node(top_file["tree"], SYSTEMPATH)
             fs.forest[1][1].append((node, top_file["owner"]))
-        for conflict_file in data["SYSTEM"].get("conflict_files", []):
-            node = cls._deserialize_file_node(conflict_file["tree"], SYSTEMPATH)
-            fs.forest[1][2].append((node, conflict_file["owner"]))
         return fs
 
     def __repr__(self) -> str:
