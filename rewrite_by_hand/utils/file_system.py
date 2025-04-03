@@ -62,7 +62,7 @@ class FileSystem:
         if if_hook:
             self.hooker = Hooker()
 
-    def add(self, path_str: str, owner: Owner) -> None:
+    def add(self, path_str: str, owner: Owner, if_hook: bool = True) -> None:
         new_path = Path(path_str)
         isdir = new_path.is_dir
         if isdir:
@@ -77,7 +77,7 @@ class FileSystem:
                 if new_node.is_proper_subtree_of(existing_top_tree.path):
                     if existing_owner == owner:
                         merge_two_trees_dir(new_node, existing_top_tree)
-                        if self.if_hook:
+                        if self.if_hook and if_hook:
                             self.hooker.add_dir(new_node.path, [])
                         return
                     else:
@@ -112,7 +112,7 @@ class FileSystem:
             for existing_top_tree in file_wait_for_merge_to:
                 self.forest[new_path.type.value][1].remove(existing_top_tree)
             self.forest[new_path.type.value][0].append((new_node, owner))
-            if self.if_hook:
+            if self.if_hook and if_hook:
                 self.hooker.add_dir(
                     new_node.path, [dir[0] for dir in dir_wait_for_merge_to]
                 )
@@ -129,7 +129,7 @@ class FileSystem:
                 if new_node.is_proper_subtree_of(existing_top_tree.path):
                     if existing_owner == owner:
                         add_file_to_dir(new_node, existing_top_tree)
-                        if self.if_hook:
+                        if self.if_hook and if_hook:
                             self.hooker.add_file(new_node.path)
                         return
                     else:
@@ -137,10 +137,10 @@ class FileSystem:
                             f"There exists a super directory of {path_str} with a different owner: {existing_owner}"
                         )
             self.forest[new_path.type.value][1].append((new_node, owner))
-            if self.if_hook:
+            if self.if_hook and if_hook:
                 self.hooker.add_file(new_node.path)
 
-    def remove(self, path_str: str) -> None:
+    def remove(self, path_str: str, if_hook: bool = False) -> None:
         target_path = Path(path_str)
         isdir = target_path.is_dir
         if isdir:
@@ -148,14 +148,14 @@ class FileSystem:
                 existing_top_tree = existing_top_dir[0]
                 if existing_top_tree.path == target_path:
                     self.forest[target_path.type.value][0].remove(existing_top_dir)
-                    if self.if_hook:
+                    if self.if_hook and if_hook:
                         self.hooker.remove(target_path)
                     return
                 if target_path.path.startswith(existing_top_tree.path.path):
                     parent = self._find_parent_dir(existing_top_tree, target_path)
                     name = target_path.name
                     self._remove_from_parent(parent, name, isdir)
-                    if self.if_hook:
+                    if self.if_hook and if_hook:
                         self.hooker.remove(target_path)
                     return
             raise ValueError(f"Path not found: {path_str}")
@@ -164,7 +164,7 @@ class FileSystem:
                 existing_top_tree = existing_top_file[0]
                 if existing_top_tree.path == target_path:
                     self.forest[target_path.type.value][1].remove(existing_top_file)
-                    if self.if_hook:
+                    if self.if_hook and if_hook:
                         self.hooker.remove(target_path)
                     return
             for existing_top_tree, _ in self.forest[target_path.type.value][0]:
@@ -172,7 +172,7 @@ class FileSystem:
                     parent = self._find_parent_dir(existing_top_tree, target_path)
                     name = target_path.name
                     self._remove_from_parent(parent, name, isdir)
-                    if self.if_hook:
+                    if self.if_hook and if_hook:
                         self.hooker.remove(target_path)
                     return
             raise ValueError(f"Path not found: {path_str}")
@@ -280,7 +280,7 @@ class FileSystem:
 
 
 if __name__ == "__main__":
-    fs = FileSystem(if_hook=False)
+    fs = FileSystem()
     fs.add("/etc/keyd", "keyd")
     fs.add("/etc/kmscon", "kmscon")
     fs.add("~/.zshrc", "zsh")
