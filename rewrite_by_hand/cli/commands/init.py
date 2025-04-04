@@ -20,7 +20,8 @@ def cmd_init(args: Any):
     status = checker.check()
     match status:
         case HealthStatus.Repo_Dir_Path_Not_Exist:
-            ensure_dir_exists(REPOPATH)
+            if not ensure_dir_exists(REPOPATH):
+                sys.exit(1)
         case HealthStatus.Repo_Dir_Path_Exist_But_Is_A_File:
             output_manager.err(
                 "Init_Repo_Dir_Path_Exist_But_Is_A_File", REPOPATH=REPOPATH
@@ -39,8 +40,13 @@ def cmd_init(args: Any):
             )
             if sure.lower() != "y":
                 sys.exit(0)
-            shutil.rmtree(REPOPATH)
-            ensure_dir_exists(REPOPATH)
+            try:
+                shutil.rmtree(REPOPATH)
+            except OSError as e:
+                output_manager.err("Init_Clean_Failed", REPOPATH=REPOPATH, error=e)
+                sys.exit(1)
+            if not ensure_dir_exists(REPOPATH):
+                sys.exit(1)
     if args.url:
         output_manager.out("Init_Cloning", Url=args.url)
         success, output = git_manager.clone(args.url)

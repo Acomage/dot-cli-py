@@ -1,18 +1,20 @@
 from typing import List, Dict, Tuple
 import os
 import json
+import sys
 
 from rewrite_by_hand.utils.hook import Hooker
 from rewrite_by_hand.data.variables import USERPATH, SYSTEMPATH
 from rewrite_by_hand.utils.fs_type import Path, File, Dir, Owner
+from rewrite_by_hand.cli.output import output_manager
 
 
 def merge_two_trees_dir(source: Dir, target: Dir) -> None:
     target_parts = target.path.cut_path
     source_parts = source.path.cut_path
 
-    if not source.is_proper_subtree_of(target.path):
-        raise ValueError("Source is not a proper subtree of target")
+    # if not source.is_proper_subtree_of(target.path):
+    #     raise ValueError("Source is not a proper subtree of target")
 
     current_dir = target
     for part in source_parts[len(target_parts) : -1]:
@@ -29,8 +31,8 @@ def add_file_to_dir(source: File, target: Dir) -> None:
     target_parts = target.path.cut_path
     source_parts = source.path.cut_path
 
-    if not source.is_proper_subtree_of(target.path):
-        raise ValueError("Source is not a proper subtree of target")
+    # if not source.is_proper_subtree_of(target.path):
+    #     raise ValueError("Source is not a proper subtree of target")
 
     current_dir = target
     for part in source_parts[len(target_parts) : -1]:
@@ -40,9 +42,8 @@ def add_file_to_dir(source: File, target: Dir) -> None:
             )
         current_dir = current_dir.subdirs[part]
     if source.name in current_dir.files:
-        raise ValueError(
-            f"File {source.path.path} already exists in {current_dir.path.path}"
-        )
+        output_manager.err("File_Already_Exists", path=source.path.path)
+        sys.exit(1)
     current_dir.files[source.name] = source
 
 
@@ -73,7 +74,8 @@ class FileSystem:
                 existing_top_tree = existing_top_dir[0]
                 existing_owner = existing_top_dir[1]
                 if new_node.path == existing_top_tree.path:
-                    raise ValueError(f"Path {new_path.path} already exists")
+                    output_manager.err("File_Already_Exists", path=new_path.path)
+                    sys.exit(1)
                 if new_node.is_proper_subtree_of(existing_top_tree.path):
                     if existing_owner == owner:
                         merge_two_trees_dir(new_node, existing_top_tree)
@@ -81,16 +83,22 @@ class FileSystem:
                             self.hooker.add_dir(new_node.path, [])
                         return
                     else:
-                        raise ValueError(
-                            f"There exists a super directory of {path_str} with a different owner: {existing_owner}"
+                        output_manager.err(
+                            "Super_Dir_With_Differnet_Owner",
+                            path=new_path.path,
+                            owner=existing_owner,
                         )
+                        sys.exit(1)
                 if existing_top_tree.is_proper_subtree_of(new_node.path):
                     if existing_owner == owner:
                         dir_wait_for_merge_to.append(existing_top_dir)
                     else:
-                        raise ValueError(
-                            f"There exists a sub directory of {path_str} with a different owner: {existing_owner}"
+                        output_manager.err(
+                            "Sub_Dir_With_Different_Owner",
+                            path=new_path.path,
+                            owner=existing_owner,
                         )
+                        sys.exit(1)
             for existing_top_file in self.forest[new_path.type.value][1]:
                 existing_top_tree = existing_top_file[0]
                 existing_owner = existing_top_file[1]
@@ -98,9 +106,12 @@ class FileSystem:
                     if existing_owner == owner:
                         file_wait_for_merge_to.append(existing_top_file)
                     else:
-                        raise ValueError(
-                            f"There exists a sub directory of {path_str} with a different owner: {existing_owner}"
+                        output_manager.err(
+                            "Sub_File_With_Different_Owner",
+                            path=new_path.path,
+                            owner=existing_owner,
                         )
+                        sys.exit(1)
             for existing_top_tree in dir_wait_for_merge_to:
                 merge_two_trees_dir(existing_top_tree[0], new_node)
             # do not need to merge file trees, because they are already there
@@ -122,7 +133,8 @@ class FileSystem:
                 existing_top_tree = existing_top_file[0]
                 existing_owner = existing_top_file[1]
                 if new_node.path == existing_top_tree.path:
-                    raise ValueError(f"Path {new_path.path} already exists")
+                    output_manager.err("File_Already_Exists", path=new_path.path)
+                    sys.exit(1)
             for existing_top_dir in self.forest[new_path.type.value][0]:
                 existing_top_tree = existing_top_dir[0]
                 existing_owner = existing_top_dir[1]
@@ -133,9 +145,12 @@ class FileSystem:
                             self.hooker.add_file(new_node.path)
                         return
                     else:
-                        raise ValueError(
-                            f"There exists a super directory of {path_str} with a different owner: {existing_owner}"
+                        output_manager.err(
+                            "Super_Dir_With_Differnet_Owner",
+                            path=new_path.path,
+                            owner=existing_owner,
                         )
+                        sys.exit(1)
             self.forest[new_path.type.value][1].append((new_node, owner))
             if self.if_hook and if_hook:
                 self.hooker.add_file(new_node.path)
@@ -158,7 +173,8 @@ class FileSystem:
                     if self.if_hook and if_hook:
                         self.hooker.remove(target_path)
                     return
-            raise ValueError(f"Path not found: {path_str}")
+            output_manager.err("Path_Not_Found", path=target_path.path)
+            sys.exit(1)
         else:
             for existing_top_file in self.forest[target_path.type.value][1]:
                 existing_top_tree = existing_top_file[0]
@@ -175,15 +191,15 @@ class FileSystem:
                     if self.if_hook and if_hook:
                         self.hooker.remove(target_path)
                     return
-            raise ValueError(f"Path not found: {path_str}")
+            output_manager.err("Path_Not_Found", path=target_path.path)
+            sys.exit(1)
 
     def _find_parent_dir(self, root: Dir, target: Path) -> Dir:
         current = root
         for part in target.cut_path[len(root.path.cut_path) : -1]:
             if part not in current.subdirs:
-                raise ValueError(
-                    f"Path {target.path} not found in existing top directorys"
-                )
+                output_manager.err("Path_Not_Found", path=target.path)
+                sys.exit(1)
             current = current.subdirs[part]
         return current
 
@@ -193,7 +209,8 @@ class FileSystem:
         elif not isdir and name in parent.files:
             del parent.files[name]
         else:
-            raise ValueError("Target not found in parent directory")
+            output_manager.err("Path_Not_Found", path=name)
+            sys.exit(1)
 
     @staticmethod
     def _serialize_node_dir(node: Dir, full_path: bool = False) -> Dict:

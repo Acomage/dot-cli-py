@@ -1,8 +1,10 @@
 from typing import List, Dict, TypeAlias, Optional
 import os
+import sys
 from enum import Enum
 
 from rewrite_by_hand.data.variables import USERPATH, SYSTEMPATH, REPOPATH
+from rewrite_by_hand.cli.output import output_manager
 
 
 class FileType(Enum):
@@ -17,11 +19,11 @@ class Path:
     def __init__(self, path: str):
         self.path = os.path.expanduser(path)
         if not os.path.exists(self.path):
-            raise FileNotFoundError(f"Path {path} does not exist.")
+            output_manager.err("Path_Not_Exist", path=path)
+            sys.exit(1)
         if REPOPATH.startswith(self.path):
-            raise ValueError(
-                f"You cannot use a path containing the {REPOPATH} or there is a recursive error."
-            )
+            output_manager.err("Use_Path_Contain_REPOPATH", REPOPATH=REPOPATH)
+            sys.exit(1)
         self.type = FileType.USER if self.path.startswith(USERPATH) else FileType.SYSTEM
         self.relative_path = (
             os.path.relpath(self.path, USERPATH)
@@ -66,7 +68,8 @@ class Node:
 class File(Node):
     def __init__(self, path: Path, blocks: Optional[List[str]] = None):
         if path.is_dir:
-            raise ValueError("File cannot be initialized with directory path")
+            output_manager.err("File_Is_A_Dir", path=path.path)
+            sys.exit(1)
         super().__init__(path)
         if not blocks:
             blocks = []
@@ -76,7 +79,8 @@ class File(Node):
 class Dir(Node):
     def __init__(self, path: Path, auto_fill: bool = True):
         if not path.is_dir:
-            raise ValueError("Dir requires a directory path")
+            output_manager.err("Dir_Is_A_File", path=path.path)
+            sys.exit(1)
         super().__init__(path)
         self.subdirs: Dict[str, Dir] = {}
         self.files: Dict[str, File] = {}
@@ -93,4 +97,5 @@ class Dir(Node):
                 else:
                     self.files[name] = File(path)
         except PermissionError:
-            raise ValueError(f"Permission denied for path: {self.path.path}")
+            output_manager.err("Permission_Denied", path=self.path.path)
+            sys.exit(1)
