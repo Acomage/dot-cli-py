@@ -12,6 +12,8 @@ class OutputText(Enum):
     Init_Next_Step = "Next step: You can\n1. run 'dot add <path> <software>' to manage your dotfiles\n2. run 'dot remote <url>' to set a remote repository."
     # clean
     Clean_Success = "Cleaned {REPOPATH} successfully."
+    # add
+    Add_Success = "Added {path} for {owner} successfully."
 
 
 class ErrorText(Enum):
@@ -28,6 +30,10 @@ class ErrorText(Enum):
     Permission_Denied = "Error: Permission denied for {path}."
     # retree
     Retree_Failed = "Error: Retree failed with error: {error} when deleting {path}"
+    # health
+    Repo_Not_Healthy = "The repo is not healthy. Maybe you can buck to the last commit."
+    # git
+    Add_Commit_Failed = "Git failed to add and commit the changes. Error: {error}"
     # init
     Init_Repo_Dir_Path_Exist_But_Is_A_File = "The path {REPOPATH} is a file, not a directory. If you need that file, you can set another path as repo path."
     Init_Repo_Dir_Exist_But_Not_Our_Repo = "We find that there is not a correct REAMDE.md file in {REPOPATH}. It may means that {REPOPATH} is created by other tools. If you need that directory, you can set another path as repo path."
@@ -64,6 +70,10 @@ class ErrorText(Enum):
         "There exists a sub file of {path} with a different owner: {owner}"
     )
     Path_Not_Found = "Path {path} is not found in repo."
+    # add
+    Add_Should_Init = (
+        "You have not initialized a repo yet. Please run 'dot init' first."
+    )
 
 
 class PromptText(Enum):

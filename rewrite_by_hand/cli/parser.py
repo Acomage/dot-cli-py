@@ -17,7 +17,7 @@ import argparse
 #     # cmd_clean,
 # )
 from rewrite_by_hand.cli.commands.init import cmd_init
-# from rewrite_by_hand.cli.commands.add import cmd_add
+from rewrite_by_hand.cli.commands.add import cmd_add
 # from rewrite_by_hand.cli.commands.remove import cmd_remove
 
 from rewrite_by_hand.cli.commands.clean import cmd_clean
@@ -44,12 +44,12 @@ def create_parser() -> argparse.ArgumentParser:
     init_parser.set_defaults(func=cmd_init)
 
     # add command
-    # add_parser = subparsers.add_parser(
-    #     "add", help="Add a file or directory to the repository"
-    # )
-    # add_parser.add_argument("path", help="Path to the file or directory")
-    # add_parser.add_argument("software", help="Name of the software the file belongs to")
-    # add_parser.set_defaults(func=cmd_add)
+    add_parser = subparsers.add_parser(
+        "add", help="Add a file or directory to the repository"
+    )
+    add_parser.add_argument("path", help="Path to the file or directory")
+    add_parser.add_argument("software", help="Name of the software the file belongs to")
+    add_parser.set_defaults(func=cmd_add)
 
     # remove command
     # remove_parser = subparsers.add_parser(

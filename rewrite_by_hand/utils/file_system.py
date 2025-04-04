@@ -155,7 +155,7 @@ class FileSystem:
             if self.if_hook and if_hook:
                 self.hooker.add_file(new_node.path)
 
-    def remove(self, path_str: str, if_hook: bool = False) -> None:
+    def remove(self, path_str: str, if_hook: bool = True) -> None:
         target_path = Path(path_str)
         isdir = target_path.is_dir
         if isdir:
@@ -295,6 +295,8 @@ class FileSystem:
     def __repr__(self) -> str:
         return self.to_json()
 
+
+file_system = FileSystem(if_hook=True)
 
 if __name__ == "__main__":
     fs = FileSystem()
