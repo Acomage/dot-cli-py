@@ -274,8 +274,8 @@ class FileSystem:
         return File(path, data["blocks"])
 
     @classmethod
-    def from_json(cls, json_str: str) -> "FileSystem":
-        fs = FileSystem()
+    def from_json(cls, json_str: str, if_hook: bool = False) -> "FileSystem":
+        fs = FileSystem(if_hook=if_hook)
         fs.forest = (([], []), ([], []))
         data = json.loads(json_str)
         for top_dir in data["USER"].get("top_dirs", []):
