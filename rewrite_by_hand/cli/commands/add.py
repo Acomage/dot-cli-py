@@ -2,8 +2,9 @@ from typing import Any
 import sys
 from rewrite_by_hand.core.health import checker, HealthStatus
 from rewrite_by_hand.cli.output import output_manager
-from rewrite_by_hand.utils.file_system import file_system
+from rewrite_by_hand.utils.file_system import FileSystem
 from rewrite_by_hand.core.git import git_manager
+from rewrite_by_hand.data.variables import REPO_CONFIG_PATH
 
 
 def cmd_add(args: Any):
@@ -22,7 +23,12 @@ def cmd_add(args: Any):
         sys.exit(1)
     path = args.path
     software = args.software
+    with open(REPO_CONFIG_PATH, "r") as f:
+        json_str = f.read()
+    file_system = FileSystem.from_json(json_str)
     file_system.add(path, software)
+    with open(REPO_CONFIG_PATH, "w") as f:
+        f.write(file_system.to_json())
     success, output = git_manager.add_and_commit(f"Add {path} for {software}")
     if not success:
         output_manager.err("Add_commit_failed", error=output)

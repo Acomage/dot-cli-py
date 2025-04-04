@@ -296,8 +296,6 @@ class FileSystem:
         return self.to_json()
 
 
-file_system = FileSystem(if_hook=True)
-
 if __name__ == "__main__":
     fs = FileSystem()
     fs.add("/etc/keyd", "keyd")

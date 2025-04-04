@@ -6,6 +6,7 @@ SYSTEMPATH = "/"
 REPOPATH = os.path.expanduser("~/.dotfiles")
 REPO_USER_PATH = os.path.join(REPOPATH, "user")
 REPO_SYSTEM_PATH = os.path.join(REPOPATH, "system")
+REPO_CONFIG_PATH = os.path.join(REPOPATH, "config.json")
 
 DEFAULT_LANGUAGE = "en"
 MESSAGES_PATH = "rewrite_by_hand.data.i18n"

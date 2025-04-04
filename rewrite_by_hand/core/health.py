@@ -34,10 +34,6 @@ class Checker:
         # If the repo is healthy, it should contain a .git directory, a system directory, a user directory, a .gitignore file, a config.json file, a local_config.json file, and a README.md file
         if ".git" not in os.listdir(REPOPATH):
             return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
-        if "system" not in os.listdir(os.path.join(REPOPATH, "conflict")):
-            return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
-        if "user" not in os.listdir(os.path.join(REPOPATH, "conflict")):
-            return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
         if ".gitignore" not in os.listdir(REPOPATH):
             return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
         if "config.json" not in os.listdir(REPOPATH):
@@ -45,6 +41,10 @@ class Checker:
         if "local_config.json" not in os.listdir(REPOPATH):
             return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
         if "README.md" not in os.listdir(REPOPATH):
+            return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
+        if "system" not in os.listdir(REPOPATH):
+            return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
+        if "user" not in os.listdir(REPOPATH):
             return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
         # TODO:cheak if the repo structure is consist with config.json
         return HealthStatus.All_Right
