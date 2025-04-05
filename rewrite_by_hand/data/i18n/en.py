@@ -33,7 +33,7 @@ class ErrorText(Enum):
     # health
     Repo_Not_Healthy = "The repo is not healthy. Maybe you can buck to the last commit."
     # git
-    Add_Commit_Failed = "Git failed to add and commit the changes. Error: {error}"
+    Add_Commit_Failed = "Git failed to add and commit the changes. Error: {error}, You should do that manually."
     # init
     Init_Repo_Dir_Path_Exist_But_Is_A_File = "The path {REPOPATH} is a file, not a directory. If you need that file, you can set another path as repo path."
     Init_Repo_Dir_Exist_But_Not_Our_Repo = "We find that there is not a correct REAMDE.md file in {REPOPATH}. It may means that {REPOPATH} is created by other tools. If you need that directory, you can set another path as repo path."
@@ -59,6 +59,7 @@ class ErrorText(Enum):
     Hooker_Add_File_Failed = "Permission denied for copy {path}."
     Hooker_Remove_Failed = "Failed to remove {path} with error: {error}"
     # file_system
+    File_Already_Managed = "The path {path} is already managed."
     File_Already_Exists = "Path {path} already exists in repo, maybe you want to use `dot manage` instead of `dot add`"
     Super_Dir_With_Differnet_Owner = (
         "There exists a super directory of {path} with a different owner: {owner}"
@@ -75,8 +76,17 @@ class ErrorText(Enum):
         "You have not initialized a repo yet. Please run 'dot init' first."
     )
     # config
-    Path_Does_Not_Contain_Config = (
-        "The file or directory {path} does not contain a config.json file."
+    Path_Does_Not_Contain_Config = "The file or directory {path} does not contain in the config.json file. You should run 'dot add' first."
+    Path_Does_Not_Contain_Local_Config = "The file or directory {path} does not contain in the local_config.json file. You should run 'dot manage' first."
+    Can_Not_Load_Config = (
+        "Can not load config.json. Please check if the file exists and is valid JSON."
+    )
+    Can_Not_Load_Local_Config = "Can not load local_config.json. Please check if the file exists and is valid JSON."
+    Can_Not_Save_Config = (
+        "Can not save config.json. Please check if the file is writable."
+    )
+    Can_Not_Save_Local_Config = (
+        "Can not save local_config.json. Please check if the file is writable."
     )
 
 

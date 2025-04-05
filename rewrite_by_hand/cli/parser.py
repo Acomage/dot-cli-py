@@ -49,6 +49,7 @@ def create_parser() -> argparse.ArgumentParser:
     )
     add_parser.add_argument("path", help="Path to the file or directory")
     add_parser.add_argument("software", help="Name of the software the file belongs to")
+    add_parser.add_argument("--pure", action="store_true", help="Add without managing")
     add_parser.set_defaults(func=cmd_add)
 
     # remove command

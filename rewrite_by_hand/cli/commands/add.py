@@ -3,7 +3,6 @@ import sys
 from rewrite_by_hand.core.health import checker, HealthStatus
 from rewrite_by_hand.cli.output import output_manager
 from rewrite_by_hand.core.git import git_manager
-from rewrite_by_hand.data.variables import REPO_CONFIG_PATH, REPO_LOCAL_CONFIG_PATH
 
 
 def cmd_add(args: Any):
@@ -20,23 +19,17 @@ def cmd_add(args: Any):
     if status == HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy:
         output_manager.err("Repo_Not_Healthy")
         sys.exit(1)
-    from rewrite_by_hand.utils.file_system import FileSystem
 
+    from rewrite_by_hand.core.config import ConfigManager
+
+    config_manager = ConfigManager.load(if_hook=True)
     path = args.path
     software = args.software
-    with open(REPO_CONFIG_PATH, "r") as f:
-        json_str = f.read()
-    file_system = FileSystem.from_json(json_str, True)
-    file_system.add(path, software)
-    with open(REPO_CONFIG_PATH, "w") as f:
-        f.write(file_system.to_json())
-    with open(REPO_LOCAL_CONFIG_PATH, "r") as f:
-        json_str_local = f.read()
-    file_system_local = FileSystem.from_json(json_str_local, False)
-    file_system_local.add(path, software)
-    with open(REPO_LOCAL_CONFIG_PATH, "w") as f:
-        f.write(file_system_local.to_json())
-    success, output = git_manager.add_and_commit(f"Add {path} for {software}")
+    if args.pure:
+        config_manager.pure_add(path_str=path, owner=software)
+    else:
+        config_manager.add(path_str=path, owner=software)
+    success, output = git_manager.add_and_commit(f"Added {path} for {software}")
     if not success:
         output_manager.err("Add_commit_failed", error=output)
         sys.exit(1)

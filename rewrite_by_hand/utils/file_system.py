@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Optional, Union
+from typing import List, Dict, Tuple, Union
 import os
 import json
 import sys
@@ -14,9 +14,6 @@ def merge_two_trees_dir(source: Dir, target: Dir) -> None:
     target_parts = target.path.cut_path
     source_parts = source.path.cut_path
 
-    # if not source.is_proper_subtree_of(target.path):
-    #     raise ValueError("Source is not a proper subtree of target")
-
     current_dir = target
     for part in source_parts[len(target_parts) : -1]:
         if part not in current_dir.subdirs:
@@ -28,12 +25,9 @@ def merge_two_trees_dir(source: Dir, target: Dir) -> None:
     current_dir.subdirs[source.name] = source
 
 
-def add_file_to_dir(source: File, target: Dir) -> None:
+def add_file_to_dir(source: File, target: Dir, local: bool = False) -> None:
     target_parts = target.path.cut_path
     source_parts = source.path.cut_path
-
-    # if not source.is_proper_subtree_of(target.path):
-    #     raise ValueError("Source is not a proper subtree of target")
 
     current_dir = target
     for part in source_parts[len(target_parts) : -1]:
@@ -43,13 +37,16 @@ def add_file_to_dir(source: File, target: Dir) -> None:
             )
         current_dir = current_dir.subdirs[part]
     if source.name in current_dir.files:
-        output_manager.err("File_Already_Exists", path=source.path.path)
+        if local:
+            output_manager.err("File_Already_Managed", path=source.path.path)
+        else:
+            output_manager.err("File_Already_Exists", path=source.path.path)
         sys.exit(1)
     current_dir.files[source.name] = source
 
 
 class FileSystem:
-    def __init__(self, if_hook: bool = False):
+    def __init__(self, if_hook: bool = False, local: bool = False) -> None:
         self.forest: Tuple[
             Tuple[
                 List[Tuple[Dir, Owner]],
@@ -60,6 +57,7 @@ class FileSystem:
                 List[Tuple[File, Owner]],
             ],
         ] = (([], []), ([], []))
+        self.local = local
         self.if_hook = if_hook
         if if_hook:
             self.hooker = Hooker()
@@ -75,7 +73,10 @@ class FileSystem:
                 existing_top_tree = existing_top_dir[0]
                 existing_owner = existing_top_dir[1]
                 if new_node.path == existing_top_tree.path:
-                    output_manager.err("File_Already_Exists", path=new_path.path)
+                    if self.local:
+                        output_manager.err("File_Already_Managed", path=new_path.path)
+                    else:
+                        output_manager.err("File_Already_Exists", path=new_path.path)
                     sys.exit(1)
                 if new_node.is_proper_subtree_of(existing_top_tree.path):
                     if existing_owner == owner:
@@ -134,14 +135,17 @@ class FileSystem:
                 existing_top_tree = existing_top_file[0]
                 existing_owner = existing_top_file[1]
                 if new_node.path == existing_top_tree.path:
-                    output_manager.err("File_Already_Exists", path=new_path.path)
+                    if self.local:
+                        output_manager.err("File_Already_Managed", path=new_path.path)
+                    else:
+                        output_manager.err("File_Already_Exists", path=new_path.path)
                     sys.exit(1)
             for existing_top_dir in self.forest[new_path.type.value][0]:
                 existing_top_tree = existing_top_dir[0]
                 existing_owner = existing_top_dir[1]
                 if new_node.is_proper_subtree_of(existing_top_tree.path):
                     if existing_owner == owner:
-                        add_file_to_dir(new_node, existing_top_tree)
+                        add_file_to_dir(new_node, existing_top_tree, local=self.local)
                         if self.if_hook and if_hook:
                             self.hooker.add_file(new_node.path)
                         return
@@ -168,9 +172,11 @@ class FileSystem:
                         self.hooker.remove(target_path)
                     return
                 if target_path.path.startswith(existing_top_tree.path.path):
-                    parent = self._find_parent_dir(existing_top_tree, target_path)
+                    parent = self._find_parent_dir(
+                        existing_top_tree, target_path, local=self.local
+                    )
                     name = target_path.name
-                    self._remove_from_parent(parent, name, isdir)
+                    self._remove_from_parent(parent, name, isdir, local=self.local)
                     if self.if_hook and if_hook:
                         self.hooker.remove(target_path)
                     return
@@ -186,13 +192,20 @@ class FileSystem:
                     return
             for existing_top_tree, _ in self.forest[target_path.type.value][0]:
                 if target_path.path.startswith(existing_top_tree.path.path):
-                    parent = self._find_parent_dir(existing_top_tree, target_path)
+                    parent = self._find_parent_dir(
+                        existing_top_tree, target_path, local=self.local
+                    )
                     name = target_path.name
-                    self._remove_from_parent(parent, name, isdir)
+                    self._remove_from_parent(parent, name, isdir, local=self.local)
                     if self.if_hook and if_hook:
                         self.hooker.remove(target_path)
                     return
-            output_manager.err("Path_Not_Found", path=target_path.path)
+            if self.local:
+                output_manager.err(
+                    "Path_Does_Not_Contain_Local_Config", path=target_path.path
+                )
+            else:
+                output_manager.err("Path_Not_Found", path=target_path.path)
             sys.exit(1)
 
     def if_exists(
@@ -227,22 +240,32 @@ class FileSystem:
                         return True, owner
             return False, None
 
-    def _find_parent_dir(self, root: Dir, target: Path) -> Dir:
+    def _find_parent_dir(self, root: Dir, target: Path, local: bool = False) -> Dir:
         current = root
         for part in target.cut_path[len(root.path.cut_path) : -1]:
             if part not in current.subdirs:
-                output_manager.err("Path_Not_Found", path=target.path)
+                if local:
+                    output_manager.err(
+                        "Path_Does_Not_Contain_Local_Config", path=target.path
+                    )
+                else:
+                    output_manager.err("Path_Not_Found", path=target.path)
                 sys.exit(1)
             current = current.subdirs[part]
         return current
 
-    def _remove_from_parent(self, parent: Dir, name: str, isdir: bool) -> None:
+    def _remove_from_parent(
+        self, parent: Dir, name: str, isdir: bool, local: bool = False
+    ) -> None:
         if isdir and name in parent.subdirs:
             del parent.subdirs[name]
         elif not isdir and name in parent.files:
             del parent.files[name]
         else:
-            output_manager.err("Path_Not_Found", path=name)
+            if local:
+                output_manager.err("Path_Does_Not_Contain_Local_Config", path=name)
+            else:
+                output_manager.err("Path_Not_Found", path=name)
             sys.exit(1)
 
     @staticmethod
@@ -307,8 +330,10 @@ class FileSystem:
         return File(path, data["blocks"])
 
     @classmethod
-    def from_json(cls, json_str: str, if_hook: bool = False) -> "FileSystem":
-        fs = FileSystem(if_hook=if_hook)
+    def from_json(
+        cls, json_str: str, if_hook: bool = False, local: bool = False
+    ) -> "FileSystem":
+        fs = FileSystem(if_hook=if_hook, local=local)
         fs.forest = (([], []), ([], []))
         data = json.loads(json_str)
         for top_dir in data["USER"].get("top_dirs", []):
