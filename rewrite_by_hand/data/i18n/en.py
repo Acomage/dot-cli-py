@@ -18,6 +18,8 @@ class OutputText(Enum):
     Manage_Success = "Managed {path} successfully."
     # remove
     Remove_Success = "Removed {path} successfully."
+    # unmanage
+    Unmanage_Success = "Unmanaged {path} successfully."
 
 
 class ErrorText(Enum):
