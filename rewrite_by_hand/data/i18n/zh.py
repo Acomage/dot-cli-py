@@ -29,3 +29,5 @@ class HelpText(Enum):
     USAGE = "用法：python script.py [选项]"
     OPTIONS = "选项：-f, -v, -h"
     EXAMPLES = "示例：python script.py -f file.txt"
+    See_More_Help = "查看 https://github.com/Acomage/dot-cli-py 获取更多帮助"
+    Tool_Description = "Dot：一个简单的 Linux 系统 dotfile 管理工具。"

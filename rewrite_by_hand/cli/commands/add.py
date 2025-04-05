@@ -27,8 +27,10 @@ def cmd_add(args: Any):
     software = args.software
     if args.pure:
         config_manager.pure_add(path_str=path, owner=software)
+        config_manager.save()
     else:
         config_manager.add(path_str=path, owner=software)
+        config_manager.save()
     success, output = git_manager.add_and_commit(f"Added {path} for {software}")
     if not success:
         output_manager.err("Add_commit_failed", error=output)

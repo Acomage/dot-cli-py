@@ -1,47 +1,45 @@
 import argparse
 
-# from rewrite_by_hand.cli.commands import (
-#     # cmd_init,
-#     cmd_add,
-#     cmd_remove,
-#     # cmd_edit,
-#     # cmd_apply,
-#     # cmd_sync,
-#     # cmd_diff,
-#     # cmd_push,
-#     # cmd_pull,
-#     # cmd_update,
-#     # cmd_remote,
-#     # cmd_manage,
-#     # cmd_conflict,
-#     # cmd_clean,
-# )
 from rewrite_by_hand.cli.commands.init import cmd_init
+from rewrite_by_hand.cli.commands.clean import cmd_clean
 from rewrite_by_hand.cli.commands.add import cmd_add
+from rewrite_by_hand.cli.commands.manage import cmd_manage
 # from rewrite_by_hand.cli.commands.remove import cmd_remove
 
-from rewrite_by_hand.cli.commands.clean import cmd_clean
+
+from rewrite_by_hand.cli.output import output_manager
 
 
 def create_parser() -> argparse.ArgumentParser:
     """Create the command line argument parser."""
     parser = argparse.ArgumentParser(
         prog="dot",
-        description="Dot: A simple dotfile management tool for Linux systems.",
-        epilog="For more information, visit https://github.com/Acomage/dot-cli-py",
+        description=output_manager._get_message("help", "Tool_Description"),
+        epilog=output_manager._get_message("help", "See_More_Help"),
     )
 
-    subparsers = parser.add_subparsers(dest="command", help="Command to execute")
+    subparsers = parser.add_subparsers(
+        dest="command",
+        help=output_manager._get_message("help", "Subparser_Description"),
+    )
 
     # Make subcommands required
     subparsers.required = True
 
     # init command
-    init_parser = subparsers.add_parser("init", help="Initialize a dotfiles repository")
+    init_parser = subparsers.add_parser(
+        "init", help=output_manager._get_message("help", "Init_Description")
+    )
     init_parser.add_argument(
-        "url", nargs="?", help="URL of a remote repository to clone"
+        "url",
+        nargs="?",
+        help=output_manager._get_message("help", "Init_Url_Description"),
     )
     init_parser.set_defaults(func=cmd_init)
+
+    # clean command
+    clean_parser = subparsers.add_parser("clean", help="Clean up the repository")
+    clean_parser.set_defaults(func=cmd_clean)
 
     # add command
     add_parser = subparsers.add_parser(
@@ -51,6 +49,13 @@ def create_parser() -> argparse.ArgumentParser:
     add_parser.add_argument("software", help="Name of the software the file belongs to")
     add_parser.add_argument("--pure", action="store_true", help="Add without managing")
     add_parser.set_defaults(func=cmd_add)
+    # manage command
+    manage_parser = subparsers.add_parser(
+        "manage",
+        help="Add a file or directory witch is in the repository to local config",
+    )
+    manage_parser.add_argument("path", help="Path to the file or directory")
+    manage_parser.set_defaults(func=cmd_manage)
 
     # remove command
     # remove_parser = subparsers.add_parser(
@@ -133,8 +138,5 @@ def create_parser() -> argparse.ArgumentParser:
     # )
     # conflict_parser.set_defaults(func=cmd_conflict)
     #
-    # clean command
-    clean_parser = subparsers.add_parser("clean", help="Clean up the repository")
-    clean_parser.set_defaults(func=cmd_clean)
 
     return parser

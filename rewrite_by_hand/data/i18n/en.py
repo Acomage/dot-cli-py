@@ -112,3 +112,7 @@ class HelpText(Enum):
     EXAMPLES = "Examples: python script.py -f file.txt"
     # above line is for test, following lines are for real use
     See_More_Help = "See more help at https://github.com/Acomage/dot-cli-py"
+    Tool_Description = "Dot: A simple dotfile management tool for Linux systems."
+    Subparser_Description = "Subcommands for Dot."
+    Init_Description = "Initialize a dotfiles repository."
+    Init_Url_Description = "URL of the remote repository to clone."
