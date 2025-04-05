@@ -17,7 +17,7 @@ Owner: TypeAlias = str
 
 class Path:
     def __init__(self, path: str):
-        self.path = os.path.expanduser(path)
+        self.path = os.path.abspath(os.path.expanduser(path))
         if not os.path.exists(self.path):
             output_manager.err("Path_Not_Exist", path=path)
             sys.exit(1)
