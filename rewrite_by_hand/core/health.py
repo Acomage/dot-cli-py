@@ -46,7 +46,9 @@ class Checker:
             return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
         if "user" not in os.listdir(REPOPATH):
             return HealthStatus.Repo_Dir_Exist_And_Our_Repo_But_Not_Healthy
-        # TODO:cheak if the repo structure is consist with config.json
+        # TODO:cheak if the repo structure is consist with config.json and check if the file in the repo is consist with blocks
+        # TODO:check if local_config.json is consist with config.json
+        # TODO:check if all file's in local is consist with bolcks
         return HealthStatus.All_Right
 
 

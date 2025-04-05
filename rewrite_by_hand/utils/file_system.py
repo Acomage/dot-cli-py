@@ -169,7 +169,7 @@ class FileSystem:
                 if existing_top_tree.path == target_path:
                     self.forest[target_path.type.value][0].remove(existing_top_dir)
                     if self.if_hook and if_hook:
-                        self.hooker.remove(target_path)
+                        self.hooker.remove_top(target_path)
                     return
                 if target_path.path.startswith(existing_top_tree.path.path):
                     parent = self._find_parent_dir(
@@ -188,7 +188,7 @@ class FileSystem:
                 if existing_top_tree.path == target_path:
                     self.forest[target_path.type.value][1].remove(existing_top_file)
                     if self.if_hook and if_hook:
-                        self.hooker.remove(target_path)
+                        self.hooker.remove_top(target_path)
                     return
             for existing_top_tree, _ in self.forest[target_path.type.value][0]:
                 if target_path.path.startswith(existing_top_tree.path.path):

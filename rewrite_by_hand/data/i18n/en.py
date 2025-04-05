@@ -65,6 +65,7 @@ class ErrorText(Enum):
     # hook
     Hooker_Add_File_Failed = "Permission denied for copy {path}."
     Hooker_Remove_Failed = "Failed to remove {path} with error: {error}"
+    Hooker_Remove_Failed_File_Not_Found = "You are trying to remove a file or directory {path} that does not exist in the repo. This error would never happen if your repo is healthy. Please check if your repo is healthy by running 'dot check'."
     # file_system
     File_Already_Managed = "The path {path} is already managed."
     File_Already_Exists = "Path {path} already exists in repo, maybe you want to use `dot manage` instead of `dot add`"

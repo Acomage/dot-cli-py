@@ -63,17 +63,57 @@ class Hooker:
             if os.path.isdir(target_path):
                 try:
                     shutil.rmtree(target_path)
+                    return
                 except OSError as e:
                     output_manager.err(
                         "Hooker_Remove_Failed", path=target_path, error=e
                     )
                     sys.exit(1)
-                return
             try:
                 os.remove(target_path)
+                return
             except OSError as e:
                 output_manager.err("Hooker_Remove_Failed", path=target_path, error=e)
                 sys.exit(1)
+        output_manager.err("Hooker_Remove_Failed_File_Not_Found", path=target_path)
+        sys.exit(1)
+
+    def remove_top(self, path: Path):
+        repo_dir = (
+            REPOUSERPATH.path if path.type == FileType.USER else REPOSYSTEMPATH.path
+        )
+        target_path = os.path.join(repo_dir, path.relative_path)
+        if os.path.exists(target_path):
+            biggest_path = Path(target_path)
+            while self.remove_parent_or_not(biggest_path):
+                biggest_path = Path(os.path.dirname(biggest_path.path))
+            if os.path.isdir(biggest_path.path):
+                try:
+                    shutil.rmtree(biggest_path.path)
+                    return
+                except OSError as e:
+                    output_manager.err(
+                        "Hooker_Remove_Failed", path=biggest_path.path, error=e
+                    )
+                    sys.exit(1)
+            try:
+                os.remove(biggest_path.path)
+                return
+            except OSError as e:
+                output_manager.err(
+                    "Hooker_Remove_Failed", path=biggest_path.path, error=e
+                )
+                sys.exit(1)
+        output_manager.err("Hooker_Remove_Failed_File_Not_Found", path=target_path)
+        sys.exit(1)
+
+    def remove_parent_or_not(self, path: Path) -> bool:
+        if len(path.cut_path) <= 3:
+            return False
+        parent_path = os.path.dirname(path.path)
+        if len(os.listdir(parent_path)) == 1:
+            return True
+        return False
 
 
 if __name__ == "__main__":
