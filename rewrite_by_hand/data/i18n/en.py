@@ -74,6 +74,10 @@ class ErrorText(Enum):
     Add_Should_Init = (
         "You have not initialized a repo yet. Please run 'dot init' first."
     )
+    # config
+    Path_Does_Not_Contain_Config = (
+        "The file or directory {path} does not contain a config.json file."
+    )
 
 
 class PromptText(Enum):

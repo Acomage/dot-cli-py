@@ -1,7 +1,8 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional, Union
 import os
 import json
 import sys
+from typing_extensions import Literal
 
 from rewrite_by_hand.utils.hook import Hooker
 from rewrite_by_hand.data.variables import USERPATH, SYSTEMPATH
@@ -193,6 +194,38 @@ class FileSystem:
                     return
             output_manager.err("Path_Not_Found", path=target_path.path)
             sys.exit(1)
+
+    def if_exists(
+        self, path_str: str
+    ) -> Union[Tuple[Literal[True], Owner], Tuple[Literal[False], None]]:
+        path = Path(path_str)
+        isdir = path.is_dir
+        if isdir:
+            for existing_top_tree, owner in self.forest[path.type.value][0]:
+                if existing_top_tree.path == path:
+                    return True, owner
+                if path.path.startswith(existing_top_tree.path.path):
+                    current = existing_top_tree
+                    for part in path.cut_path[len(current.path.cut_path) :]:
+                        if part not in current.subdirs:
+                            return False, None
+                        current = current.subdirs[part]
+                    return True, owner
+            return False, None
+        else:
+            for existing_top_tree, owner in self.forest[path.type.value][1]:
+                if existing_top_tree.path == path:
+                    return True, owner
+            for existing_top_tree, owner in self.forest[path.type.value][0]:
+                if path.path.startswith(existing_top_tree.path.path):
+                    current = existing_top_tree
+                    for part in path.cut_path[len(current.path.cut_path) : -1]:
+                        if part not in current.subdirs:
+                            return False, None
+                        current = current.subdirs[part]
+                    if path.name in current.files:
+                        return True, owner
+            return False, None
 
     def _find_parent_dir(self, root: Dir, target: Path) -> Dir:
         current = root
