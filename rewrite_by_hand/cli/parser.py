@@ -4,7 +4,8 @@ from rewrite_by_hand.cli.commands.init import cmd_init
 from rewrite_by_hand.cli.commands.clean import cmd_clean
 from rewrite_by_hand.cli.commands.add import cmd_add
 from rewrite_by_hand.cli.commands.manage import cmd_manage
-# from rewrite_by_hand.cli.commands.remove import cmd_remove
+from rewrite_by_hand.cli.commands.remove import cmd_remove
+from rewrite_by_hand.cli.commands.unmanage import cmd_unmanage
 
 
 from rewrite_by_hand.cli.output import output_manager
@@ -49,6 +50,7 @@ def create_parser() -> argparse.ArgumentParser:
     add_parser.add_argument("software", help="Name of the software the file belongs to")
     add_parser.add_argument("--pure", action="store_true", help="Add without managing")
     add_parser.set_defaults(func=cmd_add)
+
     # manage command
     manage_parser = subparsers.add_parser(
         "manage",
@@ -58,14 +60,19 @@ def create_parser() -> argparse.ArgumentParser:
     manage_parser.set_defaults(func=cmd_manage)
 
     # remove command
-    # remove_parser = subparsers.add_parser(
-    #     "remove", help="Remove a file or directory from the repository"
-    # )
-    # remove_parser.add_argument("path", help="Path to the file or directory")
-    # remove_parser.add_argument(
-    #     "software", help="Name of the software the file belongs to"
-    # )
-    # remove_parser.set_defaults(func=cmd_remove)
+    remove_parser = subparsers.add_parser(
+        "remove", help="Remove a file or directory from the repository"
+    )
+    remove_parser.add_argument("path", help="Path to the file or directory")
+    remove_parser.set_defaults(func=cmd_remove)
+
+    # unmanage command
+    unmanage_parser = subparsers.add_parser(
+        "unmanage",
+        help="Remove a file or directory from local config but keep it in the repository",
+    )
+    unmanage_parser.add_argument("path", help="Path to the file or directory")
+    unmanage_parser.set_defaults(func=cmd_unmanage)
 
     # edit command
     # edit_parser = subparsers.add_parser("edit", help="Edit a file in the repository")
