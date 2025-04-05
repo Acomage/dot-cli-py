@@ -25,5 +25,5 @@ def cmd_manage(args: Any):
     path = args.path
     config_manager.manage(path_str=path)
     config_manager.save()
-    output_manager.out("Add_Success", path=path)
+    output_manager.out("Manage_Success", path=path)
     sys.exit(0)

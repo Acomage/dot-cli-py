@@ -9,7 +9,7 @@ class ConfigManager:
     def __init__(self, if_hook=False):
         self.if_hook = if_hook
         self.config = FileSystem(if_hook=if_hook)
-        self.local_config = FileSystem(if_hook=False)
+        self.local_config = FileSystem(if_hook=False, local=True)
 
     def pure_add(self, path_str: str, owner: Owner) -> None:
         self.config.add(path_str, owner)
@@ -54,7 +54,7 @@ class ConfigManager:
         config_manager = cls()
         config_manager.config = FileSystem.from_json(config_json_str, if_hook=if_hook)
         config_manager.local_config = FileSystem.from_json(
-            local_config_json_str, if_hook=False
+            local_config_json_str, if_hook=False, local=True
         )
         return config_manager
 

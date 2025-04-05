@@ -14,6 +14,10 @@ class OutputText(Enum):
     Clean_Success = "Cleaned {REPOPATH} successfully."
     # add
     Add_Success = "Added {path} for {owner} successfully."
+    # manage
+    Manage_Success = "Managed {path} successfully."
+    # remove
+    Remove_Success = "Removed {path} successfully."
 
 
 class ErrorText(Enum):
