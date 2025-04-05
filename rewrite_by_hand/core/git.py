@@ -1,8 +1,10 @@
 import os
 import subprocess
+import sys
 from typing import List, Optional, Tuple
 
 from rewrite_by_hand.data.variables import REPOPATH
+from rewrite_by_hand.cli.output import output_manager
 
 
 class GitManager:
@@ -23,11 +25,12 @@ class GitManager:
                 check=check,
             )
             return True, result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            # 返回 stderr，如果为空则退回 stdout，再退回 str(e)
+            error_msg = e.stderr or e.stdout or str(e)
+            return False, error_msg.strip()
         except subprocess.SubprocessError as e:
-            error_msg = str(e)
-            if hasattr(e, "stderr"):
-                error_msg = e.stderr.strip()
-            return False, error_msg
+            return False, str(e)
 
     def init(self) -> Tuple[bool, str]:
         """Initialize a new Git repository."""
@@ -93,6 +96,9 @@ class GitManager:
         """Set the remote repository URL."""
         # Check if remote exists
         success, remote_output = self._run_git_command(["remote"], check=False)
+        if not success:
+            output_manager.err("Run_Remote_Failed", error=remote_output)
+            sys.exit(1)
 
         if "origin" in remote_output:
             # Update existing remote
@@ -105,6 +111,9 @@ class GitManager:
         """Remove the remote repository."""
         # Check if remote exists
         success, remote_output = self._run_git_command(["remote"], check=False)
+        if not success:
+            output_manager.err("Run_Remote_Failed", error=remote_output)
+            sys.exit(1)
 
         if "origin" in remote_output:
             return self._run_git_command(["remote", "remove", "origin"])
@@ -115,6 +124,9 @@ class GitManager:
         """Push changes to the remote repository."""
         # Check if remote exists
         success, remote_output = self._run_git_command(["remote"], check=False)
+        if not success:
+            output_manager.err("Run_Remote_Failed", error=remote_output)
+            sys.exit(1)
 
         if "origin" not in remote_output:
             return False, "No remote repository configured"
@@ -126,6 +138,9 @@ class GitManager:
         """Pull changes from the remote repository."""
         # Check if remote exists
         success, remote_output = self._run_git_command(["remote"], check=False)
+        if not success:
+            output_manager.err("Run_Remote_Failed", error=remote_output)
+            sys.exit(1)
 
         if "origin" not in remote_output:
             return False, "No remote repository configured"
@@ -152,11 +167,12 @@ class GitManager:
                 check=True,
             )
             return True, result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            # 返回 stderr，如果为空则退回 stdout，再退回 str(e)
+            error_msg = e.stderr or e.stdout or str(e)
+            return False, error_msg.strip()
         except subprocess.SubprocessError as e:
-            error_msg = str(e)
-            if hasattr(e, "stderr"):
-                error_msg = e.stderr.strip()
-            return False, error_msg
+            return False, str(e)
 
     def get_status(self) -> Tuple[bool, str]:
         """Get the status of the repository."""

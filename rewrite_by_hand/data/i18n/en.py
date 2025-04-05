@@ -40,6 +40,7 @@ class ErrorText(Enum):
     Repo_Not_Healthy = "The repo is not healthy. Maybe you can buck to the last commit."
     # git
     Add_Commit_Failed = "Git failed to add and commit the changes. Error: {error}, You should do that manually."
+    Run_Remote_Failed = "Git failed to run the remote command. Error: {error}, You should do that manually."
     # init
     Init_Repo_Dir_Path_Exist_But_Is_A_File = "The path {REPOPATH} is a file, not a directory. If you need that file, you can set another path as repo path."
     Init_Repo_Dir_Exist_But_Not_Our_Repo = "We find that there is not a correct REAMDE.md file in {REPOPATH}. It may means that {REPOPATH} is created by other tools. If you need that directory, you can set another path as repo path."
