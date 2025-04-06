@@ -2,6 +2,7 @@ from typing import Any
 import sys
 from rewrite_by_hand.core.health import checker, HealthStatus
 from rewrite_by_hand.cli.output import output_manager
+from rewrite_by_hand.utils.file_system import FileSystem
 
 
 def cmd_unmanage(args: Any):
@@ -21,9 +22,23 @@ def cmd_unmanage(args: Any):
 
     from rewrite_by_hand.core.config import ConfigManager
 
-    config_manager = ConfigManager.load(if_hook=True)
-    path = args.path
-    config_manager.unmanage(path_str=path)
-    config_manager.save()
-    output_manager.out("Unmanage_Success", path=path)
-    sys.exit(0)
+    if args.all:
+        config_manager = ConfigManager.load(if_hook=True)
+        config_manager.local_config = FileSystem(if_hook=False, local=True)
+        config_manager.save()
+        output_manager.out("Unmanage_All_Success")
+        sys.exit(0)
+    if args.path:
+        config_manager = ConfigManager.load(if_hook=True)
+        path = args.path
+        config_manager.unmanage(path_str=path)
+        config_manager.save()
+        output_manager.out("Unmanage_Success", path=path)
+        sys.exit(0)
+    else:
+        config_manager = ConfigManager.load(if_hook=True)
+        software = args.software
+        config_manager.unmanage_software(software)
+        config_manager.save()
+        output_manager.out("Unmanage_software_Success", software=software)
+        sys.exit(0)

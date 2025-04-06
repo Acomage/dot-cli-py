@@ -56,8 +56,15 @@ def create_parser() -> argparse.ArgumentParser:
         "manage",
         help="Add a file or directory witch is in the repository to local config",
     )
-    manage_parser.add_argument("path", help="Path to the file or directory")
-    manage_parser.set_defaults(func=cmd_manage)
+    manage_group = manage_parser.add_mutually_exclusive_group(required=True)
+    manage_group.add_argument("path", nargs="?", help="Path to the file or directory")
+    manage_group.add_argument("--all", action="store_true", help="Manage all files")
+    manage_group.add_argument(
+        "--software",
+        metavar="name_of_fostware",
+        help="Name of the software you want to manage",
+    )
+    manage_group.set_defaults(func=cmd_manage)
 
     # remove command
     remove_parser = subparsers.add_parser(
@@ -71,7 +78,10 @@ def create_parser() -> argparse.ArgumentParser:
         "unmanage",
         help="Remove a file or directory from local config but keep it in the repository",
     )
-    unmanage_parser.add_argument("path", help="Path to the file or directory")
+    unmanage_group = unmanage_parser.add_mutually_exclusive_group(required=True)
+    unmanage_group.add_argument("path", nargs="?", help="Path to the file or directory")
+    unmanage_group.add_argument("--all", action="store_true", help="Unmanage all files")
+    unmanage_group.add_argument("--software", help="Name of the software to unmanage")
     unmanage_parser.set_defaults(func=cmd_unmanage)
 
     # edit command

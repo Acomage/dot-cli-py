@@ -34,7 +34,7 @@ class ConfigManager:
                 self.local_config.remove(path_str)
             case False, _:
                 output_manager.err(
-                    "Path_Does_Not_Contain_Config",
+                    "Path_Does_Not_Contain_Local_Config",
                     path=path_str,
                 )
                 sys.exit(1)
@@ -46,6 +46,40 @@ class ConfigManager:
     def remove(self, path_str: str) -> None:
         self.unmanage(path_str)
         self.pure_remove(path_str)
+
+    def manage_software(self, software: Owner) -> None:
+        flag = True
+        for super_forests in self.config.forest:
+            for super_forest in super_forests:
+                for top_tree, owner in super_forest:
+                    if owner == software:
+                        flag = False
+                        match self.local_config.if_exists(top_tree.path.path):
+                            case True, _:
+                                pass
+                            case False, _:
+                                self.local_config.add(top_tree.path.path, owner)
+        if flag:
+            output_manager.err(
+                "Do_Not_Have_Software",
+                software=software,
+            )
+            sys.exit(1)
+
+    def unmanage_software(self, software: Owner) -> None:
+        flag = True
+        for super_forests in self.local_config.forest:
+            for super_forest in super_forests:
+                for top_tree, owner in super_forest:
+                    if owner == software:
+                        flag = False
+                        self.local_config.remove(top_tree.path.path)
+        if flag:
+            output_manager.err(
+                "Do_Not_Have_Software_Under_Manage",
+                software=software,
+            )
+            sys.exit(1)
 
     @classmethod
     def from_json(

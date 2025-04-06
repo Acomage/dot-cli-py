@@ -21,9 +21,23 @@ def cmd_manage(args: Any):
 
     from rewrite_by_hand.core.config import ConfigManager
 
-    config_manager = ConfigManager.load(if_hook=True)
-    path = args.path
-    config_manager.manage(path_str=path)
-    config_manager.save()
-    output_manager.out("Manage_Success", path=path)
-    sys.exit(0)
+    if args.all:
+        config_manager = ConfigManager.load(if_hook=True)
+        config_manager.local_config = config_manager.config
+        config_manager.save()
+        output_manager.out("Manage_All_Success")
+        sys.exit(0)
+    if args.path:
+        config_manager = ConfigManager.load(if_hook=True)
+        path = args.path
+        config_manager.manage(path_str=path)
+        config_manager.save()
+        output_manager.out("Manage_Success", path=path)
+        sys.exit(0)
+    else:
+        config_manager = ConfigManager.load(if_hook=True)
+        software = args.software
+        config_manager.manage_software(software)
+        config_manager.save()
+        output_manager.out("Manage_software_Success", software=software)
+        sys.exit(0)

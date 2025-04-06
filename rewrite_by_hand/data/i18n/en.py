@@ -16,10 +16,14 @@ class OutputText(Enum):
     Add_Success = "Added {path} for {owner} successfully."
     # manage
     Manage_Success = "Managed {path} successfully."
+    Manage_All_Success = "Managed all files successfully."
+    Manage_software_Success = "Managed {software} successfully."
     # remove
     Remove_Success = "Removed {path} successfully."
     # unmanage
     Unmanage_Success = "Unmanaged {path} successfully."
+    Unmanage_All_Success = "Unmanaged all files successfully."
+    Unmanage_software_Success = "Unmanaged {software} successfully."
 
 
 class ErrorText(Enum):
@@ -95,6 +99,11 @@ class ErrorText(Enum):
     )
     Can_Not_Save_Local_Config = (
         "Can not save local_config.json. Please check if the file is writable."
+    )
+    # manage
+    Do_Not_Have_Software = "You do not have a software named {software} in the repo."
+    Do_Not_Have_Software_Under_Manage = (
+        "You do not have a software named {software} under managed."
     )
 
 
