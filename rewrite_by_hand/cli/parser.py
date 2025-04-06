@@ -95,6 +95,12 @@ def create_parser() -> argparse.ArgumentParser:
     )
     remote_parser.set_defaults(func=cmd_remote)
 
+    # push command
+    push_parser = subparsers.add_parser(
+        "push", help="Push changes to the remote repository"
+    )
+    push_parser.set_defaults(func=cmd_push)
+
     # edit command
     # edit_parser = subparsers.add_parser("edit", help="Edit a file in the repository")
     # edit_parser.add_argument("path", help="Path to the file")
@@ -122,12 +128,6 @@ def create_parser() -> argparse.ArgumentParser:
     # )
     # diff_parser.add_argument("path", nargs="?", help="Path to the file or directory")
     # diff_parser.set_defaults(func=cmd_diff)
-    #
-    # # push command
-    # push_parser = subparsers.add_parser(
-    #     "push", help="Push changes to the remote repository"
-    # )
-    # push_parser.set_defaults(func=cmd_push)
     #
     # # pull command
     # pull_parser = subparsers.add_parser(
