@@ -118,7 +118,8 @@ class GitManager:
         if "origin" in remote_output:
             return self._run_git_command(["remote", "remove", "origin"])
 
-        return True, "No remote to remove"
+        output_manager.err("No_Remote_To_Remove")
+        sys.exit(1)
 
     def push(self) -> Tuple[bool, str]:
         """Push changes to the remote repository."""
@@ -129,24 +130,11 @@ class GitManager:
             sys.exit(1)
 
         if "origin" not in remote_output:
-            return False, "No remote repository configured"
+            output_manager.err("Do_Not_Have_Remote")
+            sys.exit(1)
 
         # Push changes
         return self._run_git_command(["push", "-u", "origin", "main"])
-
-    # def pull(self) -> Tuple[bool, str]:
-    #     """Pull changes from the remote repository."""
-    #     # Check if remote exists
-    #     success, remote_output = self._run_git_command(["remote"], check=False)
-    #     if not success:
-    #         output_manager.err("Run_Remote_Failed", error=remote_output)
-    #         sys.exit(1)
-    #
-    #     if "origin" not in remote_output:
-    #         return False, "No remote repository configured"
-    #
-    #     # Pull changes
-    #     return self._run_git_command(["pull", "origin", "main"])
 
     def pull(self) -> Tuple[bool, str]:
         """Pull changes from the remote repository safely."""

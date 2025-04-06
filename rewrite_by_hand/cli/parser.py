@@ -7,6 +7,7 @@ from rewrite_by_hand.cli.commands.manage import cmd_manage
 from rewrite_by_hand.cli.commands.remove import cmd_remove
 from rewrite_by_hand.cli.commands.unmanage import cmd_unmanage
 from rewrite_by_hand.cli.commands.remote import cmd_remote
+from rewrite_by_hand.cli.commands.push import cmd_push
 
 
 from rewrite_by_hand.cli.output import output_manager

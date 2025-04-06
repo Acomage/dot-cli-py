@@ -27,6 +27,8 @@ class OutputText(Enum):
     # remote
     Remote_Set_Success = "Set remote URL to {url} successfully."
     Remote_Remove_Success = "Removed remote URL successfully."
+    # push
+    Push_Success = "Pushed to remote repository successfully."
 
 
 class ErrorText(Enum):
@@ -111,6 +113,10 @@ class ErrorText(Enum):
     # remote
     Remote_Remove_Failed = "Failed to remove remote URL. Error: {error}"
     Remote_Set_Failed = "Failed to set remote URL. Error: {error}"
+    No_Remote_To_Remove = "No remote to remove."
+    # push
+    Do_Not_Have_Remote = "You do not have a remote repository yet. Please run 'dot remote <url>' to set a remote repository."
+    Push_Failed = "Failed to push to remote repository. Error: {error}"
 
 
 class PromptText(Enum):
