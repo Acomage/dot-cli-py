@@ -6,6 +6,7 @@ from rewrite_by_hand.cli.commands.add import cmd_add
 from rewrite_by_hand.cli.commands.manage import cmd_manage
 from rewrite_by_hand.cli.commands.remove import cmd_remove
 from rewrite_by_hand.cli.commands.unmanage import cmd_unmanage
+from rewrite_by_hand.cli.commands.remote import cmd_remote
 
 
 from rewrite_by_hand.cli.output import output_manager
@@ -64,7 +65,7 @@ def create_parser() -> argparse.ArgumentParser:
         metavar="name_of_fostware",
         help="Name of the software you want to manage",
     )
-    manage_group.set_defaults(func=cmd_manage)
+    manage_parser.set_defaults(func=cmd_manage)
 
     # remove command
     remove_parser = subparsers.add_parser(
@@ -83,6 +84,15 @@ def create_parser() -> argparse.ArgumentParser:
     unmanage_group.add_argument("--all", action="store_true", help="Unmanage all files")
     unmanage_group.add_argument("--software", help="Name of the software to unmanage")
     unmanage_parser.set_defaults(func=cmd_unmanage)
+
+    # remote command
+    remote_parser = subparsers.add_parser("remote", help="Manage the remote repository")
+    remote_group = remote_parser.add_mutually_exclusive_group(required=True)
+    remote_group.add_argument("url", nargs="?", help="URL of the remote repository")
+    remote_group.add_argument(
+        "--clean", action="store_true", help="Remove the remote repository"
+    )
+    remote_parser.set_defaults(func=cmd_remote)
 
     # edit command
     # edit_parser = subparsers.add_parser("edit", help="Edit a file in the repository")
@@ -129,14 +139,6 @@ def create_parser() -> argparse.ArgumentParser:
     #     "update", help="Update the system with changes from the remote repository"
     # )
     # update_parser.set_defaults(func=cmd_update)
-    #
-    # # remote command
-    # remote_parser = subparsers.add_parser("remote", help="Manage the remote repository")
-    # remote_parser.add_argument("url", nargs="?", help="URL of the remote repository")
-    # remote_parser.add_argument(
-    #     "--clean", action="store_true", help="Remove the remote repository"
-    # )
-    # remote_parser.set_defaults(func=cmd_remote)
     #
     # # manage command
     # manage_parser = subparsers.add_parser(

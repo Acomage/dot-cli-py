@@ -24,6 +24,9 @@ class OutputText(Enum):
     Unmanage_Success = "Unmanaged {path} successfully."
     Unmanage_All_Success = "Unmanaged all files successfully."
     Unmanage_software_Success = "Unmanaged {software} successfully."
+    # remote
+    Remote_Set_Success = "Set remote URL to {url} successfully."
+    Remote_Remove_Success = "Removed remote URL successfully."
 
 
 class ErrorText(Enum):
@@ -105,6 +108,9 @@ class ErrorText(Enum):
     Do_Not_Have_Software_Under_Manage = (
         "You do not have a software named {software} under managed."
     )
+    # remote
+    Remote_Remove_Failed = "Failed to remove remote URL. Error: {error}"
+    Remote_Set_Failed = "Failed to set remote URL. Error: {error}"
 
 
 class PromptText(Enum):
