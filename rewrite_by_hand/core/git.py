@@ -134,8 +134,22 @@ class GitManager:
         # Push changes
         return self._run_git_command(["push", "-u", "origin", "main"])
 
+    # def pull(self) -> Tuple[bool, str]:
+    #     """Pull changes from the remote repository."""
+    #     # Check if remote exists
+    #     success, remote_output = self._run_git_command(["remote"], check=False)
+    #     if not success:
+    #         output_manager.err("Run_Remote_Failed", error=remote_output)
+    #         sys.exit(1)
+    #
+    #     if "origin" not in remote_output:
+    #         return False, "No remote repository configured"
+    #
+    #     # Pull changes
+    #     return self._run_git_command(["pull", "origin", "main"])
+
     def pull(self) -> Tuple[bool, str]:
-        """Pull changes from the remote repository."""
+        """Pull changes from the remote repository safely."""
         # Check if remote exists
         success, remote_output = self._run_git_command(["remote"], check=False)
         if not success:
@@ -145,8 +159,67 @@ class GitManager:
         if "origin" not in remote_output:
             return False, "No remote repository configured"
 
-        # Pull changes
-        return self._run_git_command(["pull", "origin", "main"])
+        # Fetch the latest changes from remote
+        success, fetch_output = self._run_git_command(["fetch", "origin", "main"])
+        if not success:
+            return False, f"Failed to fetch from remote: {fetch_output}"
+
+        # Save working directory changes
+        # success, stash_result = self._run_git_command(
+        #     ["stash", "push", "-m", "Automatic stash before pull"]
+        # )
+        # has_local_changes = "No local changes to save" not in stash_result
+
+        # stash
+        success, stash_result = self._run_git_command(
+            ["stash", "push", "-m", "Auto stash"]
+        )
+        if not success:
+            return False, f"Failed to stash local changes: {stash_result}"
+        has_local_changes = "No local changes to save" not in stash_result
+
+        # Try fast-forward merge first
+        success, merge_output = self._run_git_command(
+            ["merge", "--ff-only", "origin/main"], check=False
+        )
+
+        if success:
+            # Fast-forward merge succeeded
+            # if has_local_changes:
+            #     # Restore working directory changes
+            #     self._run_git_command(["stash", "pop"])
+            # stash pop
+            if has_local_changes:
+                success, pop_result = self._run_git_command(["stash", "pop"])
+                if not success:
+                    return False, f"Failed to restore local changes: {pop_result}"
+            return True, "Successfully pulled changes"
+        else:
+            # Cannot fast-forward, reset to remote state but keep working directory changes
+            # self._run_git_command(["reset", "--hard", "origin/main"])
+
+            success, reset_output = self._run_git_command(
+                ["reset", "--hard", "origin/main"]
+            )
+            if not success:
+                return False, f"Failed to reset to remote state: {reset_output}"
+
+            if has_local_changes:
+                # Apply stashed changes without popping (to avoid conflicts error)
+                # self._run_git_command(["stash", "apply"], check=False)
+
+                success, apply_output = self._run_git_command(
+                    ["stash", "apply"], check=False
+                )
+                if not success:
+                    return (
+                        True,
+                        "Reset done, but failed to reapply local changes (check manually).",
+                    )
+            return (
+                True,
+                "Reset to match remote state. Local changes preserved as unstaged modifications.",
+            )
 
     def clone(self, url: str, path: Optional[str] = None) -> Tuple[bool, str]:
         """Clone a remote repository."""
