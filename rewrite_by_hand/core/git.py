@@ -145,25 +145,23 @@ class GitManager:
             sys.exit(1)
 
         if "origin" not in remote_output:
-            return False, "No remote repository configured"
+            output_manager.err("Do_Not_Have_Remote")
+            sys.exit(1)
 
         # Fetch the latest changes from remote
         success, fetch_output = self._run_git_command(["fetch", "origin", "main"])
         if not success:
-            return False, f"Failed to fetch from remote: {fetch_output}"
+            output_manager.err("Fetch_Failed", error=fetch_output)
+            sys.exit(1)
 
         # Save working directory changes
-        # success, stash_result = self._run_git_command(
-        #     ["stash", "push", "-m", "Automatic stash before pull"]
-        # )
-        # has_local_changes = "No local changes to save" not in stash_result
-
-        # stash
         success, stash_result = self._run_git_command(
             ["stash", "push", "-m", "Auto stash"]
         )
         if not success:
-            return False, f"Failed to stash local changes: {stash_result}"
+            output_manager.err("Stash_Failed", error=stash_result)
+            sys.exit(1)
+
         has_local_changes = "No local changes to save" not in stash_result
 
         # Try fast-forward merge first
@@ -173,14 +171,11 @@ class GitManager:
 
         if success:
             # Fast-forward merge succeeded
-            # if has_local_changes:
-            #     # Restore working directory changes
-            #     self._run_git_command(["stash", "pop"])
-            # stash pop
             if has_local_changes:
                 success, pop_result = self._run_git_command(["stash", "pop"])
                 if not success:
-                    return False, f"Failed to restore local changes: {pop_result}"
+                    output_manager.err("Restore_Failed", error=pop_result)
+                    sys.exit(1)
             return True, "Successfully pulled changes"
         else:
             # Cannot fast-forward, reset to remote state but keep working directory changes

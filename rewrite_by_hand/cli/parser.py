@@ -8,6 +8,7 @@ from rewrite_by_hand.cli.commands.remove import cmd_remove
 from rewrite_by_hand.cli.commands.unmanage import cmd_unmanage
 from rewrite_by_hand.cli.commands.remote import cmd_remote
 from rewrite_by_hand.cli.commands.push import cmd_push
+from rewrite_by_hand.cli.commands.pull import cmd_pull
 
 
 from rewrite_by_hand.cli.output import output_manager
@@ -101,6 +102,12 @@ def create_parser() -> argparse.ArgumentParser:
     )
     push_parser.set_defaults(func=cmd_push)
 
+    # pull command
+    pull_parser = subparsers.add_parser(
+        "pull", help="Pull changes from the remote repository"
+    )
+    pull_parser.set_defaults(func=cmd_pull)
+
     # edit command
     # edit_parser = subparsers.add_parser("edit", help="Edit a file in the repository")
     # edit_parser.add_argument("path", help="Path to the file")
@@ -128,12 +135,6 @@ def create_parser() -> argparse.ArgumentParser:
     # )
     # diff_parser.add_argument("path", nargs="?", help="Path to the file or directory")
     # diff_parser.set_defaults(func=cmd_diff)
-    #
-    # # pull command
-    # pull_parser = subparsers.add_parser(
-    #     "pull", help="Pull changes from the remote repository"
-    # )
-    # pull_parser.set_defaults(func=cmd_pull)
     #
     # # update command
     # update_parser = subparsers.add_parser(

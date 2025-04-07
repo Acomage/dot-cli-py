@@ -29,6 +29,8 @@ class OutputText(Enum):
     Remote_Remove_Success = "Removed remote URL successfully."
     # push
     Push_Success = "Pushed to remote repository successfully."
+    # pull
+    Pull_Success = "Pulled from remote repository successfully."
 
 
 class ErrorText(Enum):
@@ -117,6 +119,11 @@ class ErrorText(Enum):
     # push
     Do_Not_Have_Remote = "You do not have a remote repository yet. Please run 'dot remote <url>' to set a remote repository."
     Push_Failed = "Failed to push to remote repository. Error: {error}"
+    # pull
+    Pull_Failed = "Failed to pull from remote repository. Error: {error}"
+    Fetch_Failed = "Failed to fetch from remote repository. Error: {error}"
+    Stash_Failed = "Failed to stash changes. Error: {error}"
+    Restore_Failed = "Failed to restore local changes. Error: {error}"
 
 
 class PromptText(Enum):
