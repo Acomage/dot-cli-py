@@ -1,15 +1,19 @@
 import os
 
+# variables that can be set by the user
+REPOPATH = os.path.expanduser("~/.dotfiles")
+DEFAULT_LANGUAGE = "en"
+MAGIC_STRING = "hello world"
+
+## Variables that should not be changed by the user
 VARIABLES_PATH = os.path.abspath(__file__)
 USERPATH = os.path.expanduser("~")
 SYSTEMPATH = "/"
-REPOPATH = os.path.expanduser("~/.dotfiles")
 REPO_USER_PATH = os.path.join(REPOPATH, "user")
 REPO_SYSTEM_PATH = os.path.join(REPOPATH, "system")
 REPO_CONFIG_PATH = os.path.join(REPOPATH, "config.json")
 REPO_LOCAL_CONFIG_PATH = os.path.join(REPOPATH, "local_config.json")
 
-DEFAULT_LANGUAGE = "en"
 MESSAGES_PATH = "rewrite_by_hand.data.i18n"
 
 README_ORIGIN = os.path.join(
