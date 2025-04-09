@@ -122,8 +122,7 @@ class ErrorText(Enum):
     # pull
     Pull_Failed = "Failed to pull from remote repository. Error: {error}"
     Fetch_Failed = "Failed to fetch from remote repository. Error: {error}"
-    Stash_Failed = "Failed to stash changes. Error: {error}"
-    Restore_Failed = "Failed to restore local changes. Error: {error}"
+    Reset_Failed = "Failed to soft reset the repository to remote. Error: {error}"
 
 
 class PromptText(Enum):

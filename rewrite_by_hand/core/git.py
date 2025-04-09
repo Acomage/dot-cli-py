@@ -137,8 +137,8 @@ class GitManager:
         return self._run_git_command(["push", "-u", "origin", "main"])
 
     def pull(self) -> Tuple[bool, str]:
-        """Pull changes from the remote repository safely."""
-        # Check if remote exists
+        """拉取远程仓库，将仓库指针更新为远程状态，但保留暂存区和工作区的改动。"""
+        # 检查远程仓库是否存在
         success, remote_output = self._run_git_command(["remote"], check=False)
         if not success:
             output_manager.err("Run_Remote_Failed", error=remote_output)
@@ -148,61 +148,22 @@ class GitManager:
             output_manager.err("Do_Not_Have_Remote")
             sys.exit(1)
 
-        # Fetch the latest changes from remote
+        # 获取远程分支更新（这里以 main 分支为例）
         success, fetch_output = self._run_git_command(["fetch", "origin", "main"])
         if not success:
             output_manager.err("Fetch_Failed", error=fetch_output)
             sys.exit(1)
 
-        # Save working directory changes
-        success, stash_result = self._run_git_command(
-            ["stash", "push", "-m", "Auto stash"]
+        # 使用软重置将 HEAD 指向远程 main 分支
+        # 软重置只会移动分支指针，不会影响暂存区和工作区，保证本地改动保持不变
+        success, reset_output = self._run_git_command(
+            ["reset", "--soft", "origin/main"]
         )
         if not success:
-            output_manager.err("Stash_Failed", error=stash_result)
+            output_manager.err("Reset_Failed", error=reset_output)
             sys.exit(1)
 
-        has_local_changes = "No local changes to save" not in stash_result
-
-        # Try fast-forward merge first
-        success, merge_output = self._run_git_command(
-            ["merge", "--ff-only", "origin/main"], check=False
-        )
-
-        if success:
-            # Fast-forward merge succeeded
-            if has_local_changes:
-                success, pop_result = self._run_git_command(["stash", "pop"])
-                if not success:
-                    output_manager.err("Restore_Failed", error=pop_result)
-                    sys.exit(1)
-            return True, "Successfully pulled changes"
-        else:
-            # Cannot fast-forward, reset to remote state but keep working directory changes
-            # self._run_git_command(["reset", "--hard", "origin/main"])
-
-            success, reset_output = self._run_git_command(
-                ["reset", "--hard", "origin/main"]
-            )
-            if not success:
-                return False, f"Failed to reset to remote state: {reset_output}"
-
-            if has_local_changes:
-                # Apply stashed changes without popping (to avoid conflicts error)
-                # self._run_git_command(["stash", "apply"], check=False)
-
-                success, apply_output = self._run_git_command(
-                    ["stash", "apply"], check=False
-                )
-                if not success:
-                    return (
-                        True,
-                        "Reset done, but failed to reapply local changes (check manually).",
-                    )
-            return (
-                True,
-                "Reset to match remote state. Local changes preserved as unstaged modifications.",
-            )
+        return True, "Successfully pulled changes"
 
     def clone(self, url: str, path: Optional[str] = None) -> Tuple[bool, str]:
         """Clone a remote repository."""
