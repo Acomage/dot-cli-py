@@ -123,6 +123,15 @@ class ErrorText(Enum):
     Pull_Failed = "Failed to pull from remote repository. Error: {error}"
     Fetch_Failed = "Failed to fetch from remote repository. Error: {error}"
     Reset_Failed = "Failed to soft reset the repository to remote. Error: {error}"
+    # blocks
+    Unclosed_Block = "Unclosed block(s) detected: {unclosed_str}"
+    Unopened_Block = "End marker(s) without matching start: {unopened_str}"
+    Nested_Block = "Nested block detected: '{mark}' on line {line_num} is nested inside '{parent_mark}' which started on line {parent_line}"
+    Not_Matching_Block = "Unexpected end marker: '{mark}' on line {line_num} has no matching start marker"
+    Missmatched_Block = "Mismatched block markers on line {line_num}: Expected end of '{last_mark}' (from line {start_line}) but found '{mark}'"
+    Block_Not_Found = (
+        "Block not found: There is no block mark with '{mark}' in the file."
+    )
 
 
 class PromptText(Enum):
